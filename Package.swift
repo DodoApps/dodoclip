@@ -21,7 +21,10 @@ let package = Package(
             dependencies: [],
             path: "Sources/DodoClip",
             resources: [
-                .process("Resources")
+                .process("Resources/Assets.xcassets")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
             ]
         ),
         .testTarget(
