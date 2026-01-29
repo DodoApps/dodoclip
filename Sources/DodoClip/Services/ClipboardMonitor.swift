@@ -190,6 +190,27 @@ final class ClipboardMonitor: ObservableObject {
                 await fetchLinkMetadata(for: item, urlString: urlString)
             }
         }
+
+        // Perform OCR on images asynchronously
+        if content.type == .image {
+            Task {
+                await performOCR(for: item)
+            }
+        }
+    }
+
+    /// Perform OCR on an image item and store the recognized text
+    private func performOCR(for item: ClipItem) async {
+        guard let content = item.content,
+              content.type == .image,
+              let recognizedText = await OCRService.shared.recognizeText(in: content.data) else {
+            return
+        }
+
+        // Update the item with OCR text
+        item.ocrText = recognizedText
+        saveContext()
+        objectWillChange.send()
     }
 
     /// Fetch og:image and favicon for a link item
