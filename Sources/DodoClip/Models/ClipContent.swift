@@ -42,6 +42,11 @@ struct ClipContent: Codable, Equatable {
     var linkImageData: Data?  // og:image data for links
     var faviconData: Data?    // favicon data for links
 
+    /// Custom equality - compares only the essential content (type and data), not metadata/previews
+    static func == (lhs: ClipContent, rhs: ClipContent) -> Bool {
+        lhs.type == rhs.type && lhs.data == rhs.data
+    }
+
     /// The active data (edited if available, otherwise original)
     var activeData: Data {
         editedData ?? data

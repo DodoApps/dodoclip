@@ -68,7 +68,7 @@ struct CollectionTabsView: View {
             HStack(spacing: 8) {
                 // "All" tab
                 CollectionTab(
-                    title: "All",
+                    title: L10n.Section.all,
                     icon: "tray.full",
                     color: nil,
                     isSelected: selectedCollectionID == nil,

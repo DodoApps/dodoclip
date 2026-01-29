@@ -59,9 +59,9 @@ final class Collection {
 extension Collection {
     static var defaultCollections: [Collection] {
         [
-            Collection(name: "Links", icon: "link", colorHex: "#AF52DE", sortOrder: 0, smartFilterType: .link),
-            Collection(name: "Images", icon: "photo", colorHex: "#FF9500", sortOrder: 1, smartFilterType: .image),
-            Collection(name: "Colors", icon: "paintpalette", colorHex: "#34C759", sortOrder: 2, smartFilterType: .color)
+            Collection(name: L10n.Section.links, icon: "link", colorHex: "#AF52DE", sortOrder: 0, smartFilterType: .link),
+            Collection(name: L10n.Section.images, icon: "photo", colorHex: "#FF9500", sortOrder: 1, smartFilterType: .image),
+            Collection(name: L10n.Section.colors, icon: "paintpalette", colorHex: "#34C759", sortOrder: 2, smartFilterType: .color)
         ]
     }
 }

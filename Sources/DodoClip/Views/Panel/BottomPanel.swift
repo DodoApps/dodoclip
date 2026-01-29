@@ -48,7 +48,7 @@ final class BottomPanel: NSPanel {
         visualEffect.blendingMode = .behindWindow
         visualEffect.wantsLayer = true
         visualEffect.layer?.cornerRadius = Theme.Dimensions.panelCornerRadius
-        visualEffect.layer?.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        visualEffect.layer?.masksToBounds = true
 
         contentView = visualEffect
     }
@@ -82,11 +82,28 @@ final class BottomPanel: NSPanel {
         isCompactMode = compact
         let panelHeight = compact ? Theme.Dimensions.panelHeightCompact : Theme.Dimensions.panelHeight
 
-        // Position at bottom of screen
+        // Calculate dock position and gaps
+        let screenFrame = screen.frame
+        let visibleFrame = screen.visibleFrame
+
+        let leftDockGap = visibleFrame.minX - screenFrame.minX
+        let rightDockGap = screenFrame.maxX - visibleFrame.maxX
+        let bottomDockGap = visibleFrame.minY - screenFrame.minY
+
+        // Padding for aesthetics
+        let bottomPadding: CGFloat = 8
+        let sidePadding: CGFloat = 48
+
+        // Panel positioning - use visibleFrame which already accounts for dock
+        let panelX = visibleFrame.minX + sidePadding
+        let panelWidth = visibleFrame.width - (sidePadding * 2)
+        let panelY = visibleFrame.minY + bottomPadding
+
+        // Position at bottom of visible screen area
         let frame = NSRect(
-            x: screen.frame.minX,
-            y: screen.visibleFrame.minY,
-            width: screen.frame.width,
+            x: panelX,
+            y: panelY,
+            width: panelWidth,
             height: panelHeight
         )
         setFrame(frame, display: true)

@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "DodoClip",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v14)
     ],
@@ -21,7 +22,12 @@ let package = Package(
             dependencies: [],
             path: "Sources/DodoClip",
             resources: [
-                .process("Resources/Assets.xcassets")
+                .process("Resources/Assets.xcassets"),
+                .process("Resources/en.lproj"),
+                .process("Resources/de.lproj"),
+                .process("Resources/tr.lproj"),
+                .process("Resources/fr.lproj"),
+                .process("Resources/es.lproj")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")

@@ -236,13 +236,13 @@ struct PanelContentView: View {
 
     private var emptyStateTitle: String {
         if !searchText.isEmpty {
-            return "No matches found"
+            return L10n.Panel.noResults
         } else if !selectedTypes.isEmpty {
             return "No clips of this type"
         } else if selectedCollectionID != nil {
             return "Collection is empty"
         } else {
-            return "No clips yet"
+            return L10n.Panel.noItems
         }
     }
 

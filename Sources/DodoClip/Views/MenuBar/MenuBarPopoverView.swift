@@ -80,7 +80,7 @@ struct MenuBarPopoverView: View {
                 .foregroundColor(Theme.Colors.textSecondary)
                 .font(.system(size: 12))
 
-            TextField("Search clips...", text: $searchText, prompt: Text("Search clips...").foregroundColor(Theme.Colors.textPrimary.opacity(0.5)))
+            TextField("Search clips...", text: $searchText, prompt: Text("Search clips...").foregroundColor(Theme.Colors.textSecondary))
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Colors.textPrimary)

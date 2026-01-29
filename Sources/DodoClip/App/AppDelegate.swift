@@ -33,6 +33,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.updateMenuBarIcon()
             }
             .store(in: &cancellables)
+
+        // Show first-run HUD
+        showFirstRunHUDIfNeeded()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -134,29 +137,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showContextMenu() {
         let menu = NSMenu()
 
-        menu.addItem(NSMenuItem(title: "Show Panel", action: #selector(showBottomPanelAction), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: L10n.Menu.showPanel, action: #selector(showBottomPanelAction), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
 
         // Pause submenu
         if clipboardMonitor.isPaused {
-            let resumeItem = NSMenuItem(title: "Resume Capture", action: #selector(resumeCapture), keyEquivalent: "")
+            let resumeItem = NSMenuItem(title: L10n.Menu.resumeCapture, action: #selector(resumeCapture), keyEquivalent: "")
             menu.addItem(resumeItem)
         } else {
-            let pauseItem = NSMenuItem(title: "Pause Capture", action: nil, keyEquivalent: "")
+            let pauseItem = NSMenuItem(title: L10n.Menu.pauseCapture, action: nil, keyEquivalent: "")
             let pauseMenu = NSMenu()
-            pauseMenu.addItem(NSMenuItem(title: "5 minutes", action: #selector(pauseFiveMinutes), keyEquivalent: ""))
-            pauseMenu.addItem(NSMenuItem(title: "15 minutes", action: #selector(pauseFifteenMinutes), keyEquivalent: ""))
-            pauseMenu.addItem(NSMenuItem(title: "1 hour", action: #selector(pauseOneHour), keyEquivalent: ""))
+            pauseMenu.addItem(NSMenuItem(title: L10n.Menu.Pause.fiveMin, action: #selector(pauseFiveMinutes), keyEquivalent: ""))
+            pauseMenu.addItem(NSMenuItem(title: L10n.Menu.Pause.fifteenMin, action: #selector(pauseFifteenMinutes), keyEquivalent: ""))
+            pauseMenu.addItem(NSMenuItem(title: L10n.Menu.Pause.oneHour, action: #selector(pauseOneHour), keyEquivalent: ""))
             pauseMenu.addItem(NSMenuItem.separator())
-            pauseMenu.addItem(NSMenuItem(title: "Until resumed", action: #selector(pauseUntilResume), keyEquivalent: ""))
+            pauseMenu.addItem(NSMenuItem(title: L10n.Menu.Pause.untilResume, action: #selector(pauseUntilResume), keyEquivalent: ""))
             pauseItem.submenu = pauseMenu
             menu.addItem(pauseItem)
         }
 
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: L10n.Menu.preferences, action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit DodoClip", action: #selector(quitApp), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: L10n.Menu.quit, action: #selector(quitApp), keyEquivalent: "q"))
 
         statusItem?.menu = menu
         statusItem?.button?.performClick(nil)
@@ -223,11 +226,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyManager.registerDefaultHotkeys()
 
         hotkeyManager.onPanelHotkey = { [weak self] in
+            // Handle first-run HUD if showing
+            if FirstRunController.shared.isShowingHUD {
+                FirstRunController.shared.hotkeyPressed()
+                return
+            }
             self?.panelController?.toggle()
         }
 
         hotkeyManager.onPasteStackHotkey = { [weak self] in
             self?.activatePasteStack()
+        }
+    }
+
+    // MARK: - First Run HUD
+
+    private func showFirstRunHUDIfNeeded() {
+        FirstRunController.shared.showIfNeeded { [weak self] in
+            // First run completed - open the panel
+            self?.showBottomPanel()
         }
     }
 

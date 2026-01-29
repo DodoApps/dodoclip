@@ -16,7 +16,7 @@ struct SearchBar: View {
                     .foregroundColor(Theme.Colors.textSecondary)
                     .font(.system(size: 14))
 
-                TextField("Search clips...", text: $searchText, prompt: Text("Search clips...").foregroundColor(Theme.Colors.textPrimary.opacity(0.5)))
+                TextField(L10n.Panel.search, text: $searchText, prompt: Text(L10n.Panel.search).foregroundColor(Theme.Colors.textSecondary))
                     .textFieldStyle(.plain)
                     .font(Theme.Typography.searchInput)
                     .foregroundColor(Theme.Colors.textPrimary)
