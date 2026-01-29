@@ -9,11 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> •
-  <a href="README.de.md">Deutsch</a> •
-  <a href="README.tr.md">Türkçe</a> •
-  <a href="README.fr.md">Français</a> •
-  <a href="README.es.md">Español</a>
+  <a href="README.md">🇺🇸 English</a> •
+  <a href="README.de.md">🇩🇪 Deutsch</a> •
+  <a href="README.tr.md">🇹🇷 Türkçe</a> •
+  <a href="README.fr.md">🇫🇷 Français</a> •
+  <a href="README.es.md">🇪🇸 Español</a>
 </p>
 
 ## Description
