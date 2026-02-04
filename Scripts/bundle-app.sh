@@ -3,6 +3,16 @@
 
 set -e
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the project root directory (parent of Scripts)
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Change to project root directory
+cd "$PROJECT_ROOT"
+echo "📁 Working directory: $PROJECT_ROOT"
+echo ""
+
 APP_NAME="DodoClip"
 BUILD_DIR=".build/release"
 APP_DIR="$BUILD_DIR/$APP_NAME.app"
@@ -10,12 +20,35 @@ CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
+# Parse command line arguments
+CLEAN_BUILD=false
+if [[ "$1" == "--clean" ]] || [[ "$1" == "-c" ]]; then
+    CLEAN_BUILD=true
+fi
+
+# Clean build cache if requested or always clean for reliability
+echo "🧹 Cleaning build cache..."
+swift package clean
+echo ""
+
 # Build release
-echo "Building release..."
+echo "🔨 Building release..."
 swift build -c release
+echo ""
+
+# Verify executable was created
+if [ ! -f "$BUILD_DIR/$APP_NAME" ]; then
+    echo "❌ Error: Executable not found at $BUILD_DIR/$APP_NAME"
+    echo "Build may have failed. Please check the build output above."
+    echo "Current directory: $(pwd)"
+    ls -la "$BUILD_DIR/" 2>&1 || echo "Build directory does not exist"
+    exit 1
+fi
+
+echo "✅ Executable verified at: $BUILD_DIR/$APP_NAME"
 
 # Create app bundle structure
-echo "Creating app bundle..."
+echo "📦 Creating app bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$MACOS_DIR"
 mkdir -p "$RESOURCES_DIR"
@@ -24,7 +57,7 @@ mkdir -p "$RESOURCES_DIR"
 cp "$BUILD_DIR/$APP_NAME" "$MACOS_DIR/"
 
 # Create icns from png
-echo "Creating icon..."
+echo "🎨 Creating icon..."
 ICONSET_DIR="/tmp/DodoClip.iconset"
 rm -rf "$ICONSET_DIR"
 mkdir -p "$ICONSET_DIR"
@@ -83,9 +116,27 @@ EOF
 
 # Copy resources bundle if exists - place it at app root level where Bundle.module expects it
 if [ -d "$BUILD_DIR/DodoClip_DodoClip.bundle" ]; then
+    echo "📚 Copying resources bundle..."
     cp -r "$BUILD_DIR/DodoClip_DodoClip.bundle" "$APP_DIR/"
 fi
 
-echo "Done! App bundle created at: $APP_DIR"
-echo "To install, copy to /Applications:"
-echo "  cp -r \"$APP_DIR\" /Applications/"
+# Verify app bundle was created successfully
+if [ ! -d "$APP_DIR" ]; then
+    echo "❌ Error: App bundle not created at $APP_DIR"
+    exit 1
+fi
+
+if [ ! -f "$MACOS_DIR/$APP_NAME" ]; then
+    echo "❌ Error: Executable not copied to app bundle"
+    exit 1
+fi
+
+echo ""
+echo "✅ Success! App bundle created at: $APP_DIR"
+echo ""
+echo "📦 To install, run:"
+echo "   cp -r \"$APP_DIR\" /Applications/"
+echo ""
+echo "🚀 Or run directly:"
+echo "   open \"$APP_DIR\""
+echo ""

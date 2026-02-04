@@ -6,20 +6,27 @@ struct CollectionTab: View {
     let icon: String?
     let color: Color?
     let isSelected: Bool
+    let isCustom: Bool
     let onTap: () -> Void
+    var onDelete: (() -> Void)?
+    var onRename: (() -> Void)?
+  var onDropItem: ((UUID) -> Void)?
 
     @State private var isHovered = false
-
+  @State private var isDropTarget = false
+    
     private var backgroundColor: Color {
         if isSelected {
             return Theme.Colors.accent
+    } else if isDropTarget {
+      return Theme.Colors.accent.opacity(0.3)
         } else if isHovered {
             return Theme.Colors.cardHover
         } else {
             return Color.clear
         }
     }
-
+    
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 6) {
@@ -28,7 +35,7 @@ struct CollectionTab: View {
                         .font(.system(size: 12))
                         .foregroundColor(isSelected ? .white : (color ?? Theme.Colors.textSecondary))
                 }
-
+                
                 Text(title)
                     .font(Theme.Typography.filterChip)
                     .foregroundColor(isSelected ? .white : Theme.Colors.textPrimary)
@@ -52,6 +59,39 @@ struct CollectionTab: View {
             isHovered = hovering
         }
         .help("View \(title) clips")
+        .contextMenu {
+            if isCustom {
+                Button("Rename") {
+                    onRename?()
+                }
+                
+                Divider()
+                
+                Button("Delete", role: .destructive) {
+                    onDelete?()
+                }
+            }
+        }
+    .onDrop(of: [.text], isTargeted: $isDropTarget) { providers in
+      // Only allow drops on custom collections
+      guard isCustom, let onDrop = onDropItem else { return false }
+
+      // Extract the dragged item ID
+      guard let provider = providers.first else { return false }
+
+      provider.loadItem(forTypeIdentifier: "public.text", options: nil) { item, error in
+        if let data = item as? Data,
+          let uuidString = String(data: data, encoding: .utf8),
+          let itemID = UUID(uuidString: uuidString)
+        {
+          DispatchQueue.main.async {
+            onDrop(itemID)
+          }
+        }
+      }
+
+      return true
+    }
     }
 }
 
@@ -60,11 +100,14 @@ struct CollectionTabsView: View {
     @Binding var selectedCollectionID: UUID?
     let collections: [Collection]
     var onCreateCollection: (() -> Void)?
-
+    var onDeleteCollection: ((Collection) -> Void)?
+    var onRenameCollection: ((Collection) -> Void)?
+  var onAddItemToCollection: ((UUID, Collection) -> Void)?
+    
     var body: some View {
         HStack {
             Spacer()
-
+            
             HStack(spacing: 8) {
                 // "All" tab
                 CollectionTab(
@@ -72,11 +115,12 @@ struct CollectionTabsView: View {
                     icon: "tray.full",
                     color: nil,
                     isSelected: selectedCollectionID == nil,
+                    isCustom: false,
                     onTap: {
                         selectedCollectionID = nil
                     }
                 )
-
+                
                 // Collection tabs
                 ForEach(collections, id: \.id) { collection in
                     CollectionTab(
@@ -84,12 +128,25 @@ struct CollectionTabsView: View {
                         icon: collection.icon,
                         color: Color(hex: collection.colorHex),
                         isSelected: selectedCollectionID == collection.id,
+                        isCustom: !collection.isSmartCollection,
                         onTap: {
                             selectedCollectionID = collection.id
-                        }
+                        },
+                        onDelete: !collection.isSmartCollection
+                        ? {
+                            onDeleteCollection?(collection)
+                        } : nil,
+                        onRename: !collection.isSmartCollection
+                        ? {
+                            onRenameCollection?(collection)
+              } : nil,
+            onDropItem: !collection.isSmartCollection
+              ? { itemID in
+                onAddItemToCollection?(itemID, collection)
+                        } : nil
                     )
                 }
-
+                
                 // Add collection button
                 if let onCreate = onCreateCollection {
                     Button(action: onCreate) {
@@ -103,7 +160,7 @@ struct CollectionTabsView: View {
                     .buttonStyle(.plain)
                 }
             }
-
+            
             Spacer()
         }
         .padding(.horizontal, Theme.Dimensions.panelPadding)
