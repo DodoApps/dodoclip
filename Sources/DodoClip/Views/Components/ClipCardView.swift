@@ -8,13 +8,17 @@ struct ClipCardView: View {
     let index: Int?
     let onSelect: () -> Void
     let onPaste: () -> Void
+    var onCopy: (() -> Void)?
     var onPastePlainText: (() -> Void)?
     var onPin: (() -> Void)?
     var onDelete: (() -> Void)?
     var onOpen: (() -> Void)?
-
+    var customCollections: [Collection]?
+    var onCreateCollection: (() -> Void)?
+    var onAddToCollection: ((Collection) -> Void)?
+    
     @State private var isHovered: Bool = false
-
+    
     // Cached content - decoded once when view appears
     @State private var cachedContent: ClipContent?
     @State private var cachedAppIcon: NSImage?
@@ -22,15 +26,15 @@ struct ClipCardView: View {
     @State private var cachedFavicon: NSImage?
     @State private var cachedLinkImage: NSImage?
     @State private var cachedColorValue: NSColor?
-
+    
     private var cardWidth: CGFloat {
         isCompact ? Theme.Dimensions.cardWidthCompact : Theme.Dimensions.cardWidth
     }
-
+    
     private var cardHeight: CGFloat {
         isCompact ? Theme.Dimensions.cardHeightCompact : Theme.Dimensions.cardHeight
     }
-
+    
     @ViewBuilder
     private var cardBackground: some View {
         if item.contentType == .color, let color = cachedColorValue {
@@ -39,33 +43,38 @@ struct ClipCardView: View {
             Color.clear
         }
     }
-
+    
     /// Whether this is a color card with a light background (needs dark text)
     private var isLightColorCard: Bool {
         guard item.contentType == .color, let color = cachedColorValue else { return false }
         return color.isLightColor
     }
-
+    
     /// Text color for color cards - dark for light backgrounds, light for dark backgrounds
     private var colorCardTextPrimary: Color {
         isLightColorCard ? .black : .white
     }
-
+    
     private var colorCardTextSecondary: Color {
         isLightColorCard ? .black.opacity(0.6) : .white.opacity(0.7)
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             cardHeader
-
+            
             // Content
             cardContent
-
+            
             // Footer
             if !isCompact {
                 cardFooter
+            }
+            
+            // Collections indicator
+            if !isCompact && !itemCustomCollections.isEmpty {
+                collectionsIndicator
             }
         }
         .frame(width: cardWidth, height: cardHeight)
@@ -80,7 +89,8 @@ struct ClipCardView: View {
         .gesture(
             TapGesture(count: 2)
                 .onEnded {
-                    onPaste()
+                    // Double-click copies to clipboard without pasting
+                    onCopy?()
                 }
         )
         .simultaneousGesture(
@@ -97,45 +107,45 @@ struct ClipCardView: View {
             loadCachedContent()
         }
     }
-
+    
     /// Load and cache content once when the view appears
     private func loadCachedContent() {
         // Only load if not already cached
         guard cachedContent == nil else { return }
-
+        
         // Decode content once
         cachedContent = item.content
-
+        
         // Cache app icon
         if let bundleID = item.sourceAppBundleID {
             cachedAppIcon = ImageCacheService.shared.appIcon(for: bundleID)
         }
-
+        
         // Cache type-specific content
         switch item.contentType {
-        case .image:
-            if let content = cachedContent {
-                cachedThumbnail = ImageCacheService.shared.thumbnail(
-                    for: item.id,
-                    imageData: content.activeData
-                )
-            }
-        case .link:
-            if let content = cachedContent {
-                if let faviconData = content.faviconData {
-                    cachedFavicon = ImageCacheService.shared.favicon(for: item.id, data: faviconData)
+            case .image:
+                if let content = cachedContent {
+                    cachedThumbnail = ImageCacheService.shared.thumbnail(
+                        for: item.id,
+                        imageData: content.activeData
+                    )
                 }
-                if let linkImageData = content.linkImageData {
-                    cachedLinkImage = ImageCacheService.shared.linkImage(for: item.id, data: linkImageData)
+            case .link:
+                if let content = cachedContent {
+                    if let faviconData = content.faviconData {
+                        cachedFavicon = ImageCacheService.shared.favicon(for: item.id, data: faviconData)
+                    }
+                    if let linkImageData = content.linkImageData {
+                        cachedLinkImage = ImageCacheService.shared.linkImage(for: item.id, data: linkImageData)
+                    }
                 }
-            }
-        case .color:
-            cachedColorValue = cachedContent?.colorValue
-        default:
-            break
+            case .color:
+                cachedColorValue = cachedContent?.colorValue
+            default:
+                break
         }
     }
-
+    
     private var cardTooltip: String {
         var tooltip = item.contentPreview.prefix(50)
         if item.contentPreview.count > 50 {
@@ -144,12 +154,12 @@ struct ClipCardView: View {
         if let index = index, index < 9 {
             tooltip += "\n⌘\(index + 1) to paste"
         }
-        tooltip += "\nDouble-click to paste"
+        tooltip += "\nDouble-click to copy to clipboard"
         return String(tooltip)
     }
-
+    
     // MARK: - Header
-
+    
     private var cardHeader: some View {
         HStack(spacing: 8) {
             // App icon (cached)
@@ -163,27 +173,27 @@ struct ClipCardView: View {
                     .foregroundColor(item.contentType == .color ? colorCardTextSecondary : Theme.Colors.textSecondary)
                     .frame(width: Theme.Dimensions.appIconSize, height: Theme.Dimensions.appIconSize)
             }
-
+            
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.sourceAppName ?? "Unknown")
                     .font(Theme.Typography.cardMeta)
                     .foregroundColor(item.contentType == .color ? colorCardTextSecondary : Theme.Colors.textSecondary)
                     .lineLimit(1)
-
+                
                 Text(item.relativeTimeString)
                     .font(Theme.Typography.cardMeta)
                     .foregroundColor(item.contentType == .color ? colorCardTextSecondary.opacity(0.7) : Theme.Colors.textSecondary.opacity(0.7))
             }
-
+            
             Spacer()
-
+            
             // Pin indicator (always visible when pinned)
             if item.isPinned {
                 Image(systemName: "pin.fill")
                     .font(.system(size: 12))
                     .foregroundColor(item.contentType == .color ? colorCardTextPrimary : Theme.Colors.pinned)
             }
-
+            
             // Keyboard shortcut indicator
             if let index = index, index < 9 {
                 Text("⌘\(index + 1)")
@@ -191,7 +201,7 @@ struct ClipCardView: View {
                     .foregroundColor(item.contentType == .color ? colorCardTextSecondary.opacity(0.7) : Theme.Colors.textSecondary.opacity(0.5))
                     .padding(.trailing, 4)
             }
-
+            
             // Type badge
             typeBadge
         }
@@ -199,7 +209,7 @@ struct ClipCardView: View {
         .padding(.top, 8)
         .padding(.bottom, 4)
     }
-
+    
     private var typeBadge: some View {
         Group {
             if item.contentType == .color {
@@ -222,29 +232,29 @@ struct ClipCardView: View {
             }
         }
     }
-
+    
     // MARK: - Content
-
+    
     private var cardContent: some View {
         Group {
             switch item.contentType {
-            case .text, .richText:
-                textContent
-            case .image:
-                imageContent
-            case .link:
-                linkContent
-            case .file:
-                fileContent
-            case .color:
-                colorContent
+                case .text, .richText:
+                    textContent
+                case .image:
+                    imageContent
+                case .link:
+                    linkContent
+                case .file:
+                    fileContent
+                case .color:
+                    colorContent
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, Theme.Dimensions.cardPadding)
         .padding(.vertical, 4)
     }
-
+    
     private var textContent: some View {
         Text(item.plainText ?? "")
             .font(Theme.Typography.cardTitle)
@@ -252,7 +262,7 @@ struct ClipCardView: View {
             .lineLimit(isCompact ? 3 : 6)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
-
+    
     private var imageContent: some View {
         Group {
             if let thumbnail = cachedThumbnail {
@@ -275,7 +285,7 @@ struct ClipCardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     private var linkContent: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
@@ -290,15 +300,15 @@ struct ClipCardView: View {
                         .font(.system(size: 16))
                         .foregroundColor(Theme.Colors.badgeLink)
                 }
-
+                
                 Spacer()
-
+                
                 // Open indicator
                 Image(systemName: "arrow.up.right.square")
                     .font(.system(size: 12))
                     .foregroundColor(Theme.Colors.textSecondary.opacity(0.5))
             }
-
+            
             // OG Image preview (cached thumbnail)
             if let linkImage = cachedLinkImage {
                 Image(nsImage: linkImage)
@@ -308,14 +318,14 @@ struct ClipCardView: View {
                     .frame(height: isCompact ? 60 : 100)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
             }
-
+            
             if let title = item.linkTitle, !title.isEmpty {
                 Text(title)
                     .font(Theme.Typography.cardTitle)
                     .foregroundColor(Theme.Colors.textPrimary)
                     .lineLimit(2)
             }
-
+            
             Text(item.plainText ?? "")
                 .font(Theme.Typography.cardMeta)
                 .foregroundColor(Color(hex: "5AC8FA")) // Light blue, readable on dark background
@@ -324,13 +334,13 @@ struct ClipCardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
-
+    
     private var fileContent: some View {
         VStack(spacing: 8) {
             Image(systemName: fileIcon)
                 .font(.system(size: 32))
                 .foregroundColor(Theme.Colors.badgeFile)
-
+            
             Text(item.fileName ?? "File")
                 .font(Theme.Typography.cardTitle)
                 .foregroundColor(Theme.Colors.textPrimary)
@@ -339,25 +349,25 @@ struct ClipCardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     private var fileIcon: String {
         guard let fileName = item.fileName else { return "doc" }
         let ext = (fileName as NSString).pathExtension.lowercased()
         switch ext {
-        case "pdf": return "doc.text"
-        case "png", "jpg", "jpeg", "gif", "webp": return "photo"
-        case "mp4", "mov", "avi": return "film"
-        case "mp3", "wav", "aac": return "music.note"
-        case "zip", "tar", "gz": return "doc.zipper"
-        case "swift", "js", "py", "ts": return "chevron.left.forwardslash.chevron.right"
-        default: return "doc"
+            case "pdf": return "doc.text"
+            case "png", "jpg", "jpeg", "gif", "webp": return "photo"
+            case "mp4", "mov", "avi": return "film"
+            case "mp3", "wav", "aac": return "music.note"
+            case "zip", "tar", "gz": return "doc.zipper"
+            case "swift", "js", "py", "ts": return "chevron.left.forwardslash.chevron.right"
+            default: return "doc"
         }
     }
-
+    
     private var colorContent: some View {
         VStack {
             Spacer()
-
+            
             // Hex code with contrasting background for readability
             Text(item.plainText ?? "")
                 .font(.system(size: 14, weight: .semibold, design: .monospaced))
@@ -366,14 +376,14 @@ struct ClipCardView: View {
                 .padding(.vertical, 6)
                 .background(isLightColorCard ? Color.black.opacity(0.4) : Color.white.opacity(0.4))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
-
+            
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     // MARK: - Footer
-
+    
     private var cardFooter: some View {
         HStack {
             // Pin indicator
@@ -386,46 +396,75 @@ struct ClipCardView: View {
                 }
                 .foregroundColor(item.contentType == .color ? colorCardTextPrimary : Theme.Colors.pinned)
             }
-
+            
             if item.isFavorite {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 10))
                     .foregroundColor(item.contentType == .color ? colorCardTextPrimary : Theme.Colors.favorite)
             }
-
+            
             Spacer()
-
+            
             // Character count or dimensions
             metadataText
         }
         .padding(.horizontal, Theme.Dimensions.cardPadding)
-        .padding(.bottom, 8)
+        .padding(.bottom, 4)
         .padding(.top, 4)
     }
-
+    
+    // MARK: - Collections Indicator
+    
+    /// Get custom collections this item belongs to (exclude smart collections)
+    private var itemCustomCollections: [Collection] {
+        guard let itemCollections = item.collections else { return [] }
+        return itemCollections.filter { !$0.isSmartCollection }
+    }
+    
+    private var collectionsIndicator: some View {
+        HStack(spacing: 4) {
+            ForEach(itemCustomCollections, id: \.id) { collection in
+                HStack(spacing: 3) {
+                    Image(systemName: collection.icon)
+                        .font(.system(size: 9))
+                    Text(collection.name)
+                        .font(.system(size: 9, weight: .medium))
+                }
+                .foregroundColor(Color(hex: collection.colorHex))
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(Color(hex: collection.colorHex).opacity(0.15))
+                .clipShape(Capsule())
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Theme.Dimensions.cardPadding)
+        .padding(.bottom, 6)
+    }
+    
     private var metadataText: some View {
         Group {
             switch item.contentType {
-            case .text, .richText, .link:
-                if let count = item.characterCount {
-                    Text("\(count) chars")
-                }
-            case .image:
-                if let dims = item.imageDimensions {
-                    Text(dims)
-                }
-            case .file:
-                Text("File")
-            case .color:
-                EmptyView()
+                case .text, .richText, .link:
+                    if let count = item.characterCount {
+                        Text("\(count) chars")
+                    }
+                case .image:
+                    if let dims = item.imageDimensions {
+                        Text(dims)
+                    }
+                case .file:
+                    Text("File")
+                case .color:
+                    EmptyView()
             }
         }
         .font(Theme.Typography.characterCount)
         .foregroundColor(Theme.Colors.textSecondary)
     }
-
+    
     // MARK: - Context Menu
-
+    
     @ViewBuilder
     private var contextMenuContent: some View {
         Button {
@@ -434,16 +473,16 @@ struct ClipCardView: View {
             Label("Paste", systemImage: "doc.on.clipboard")
         }
         .keyboardShortcut(.return, modifiers: [])
-
+        
         Button {
             onPastePlainText?()
         } label: {
             Label("Paste as plain text", systemImage: "text.alignleft")
         }
         .keyboardShortcut(.return, modifiers: .shift)
-
+        
         Divider()
-
+        
         if item.contentType == .link || item.contentType == .file {
             Button {
                 onOpen?()
@@ -452,18 +491,46 @@ struct ClipCardView: View {
             }
             .keyboardShortcut("o", modifiers: .command)
         }
-
+        
         Divider()
-
+        
         Button {
             onPin?()
         } label: {
             Label(item.isPinned ? "Unpin" : "Pin", systemImage: item.isPinned ? "pin.slash" : "pin")
         }
         .keyboardShortcut("p", modifiers: .command)
-
+        
         Divider()
-
+        
+        // Add to Collection submenu
+        Menu {
+            // New Tab option
+            Button {
+                onCreateCollection?()
+            } label: {
+                Label("New Tab", systemImage: "plus.circle")
+            }
+            
+            // Divider
+            if let collections = customCollections, !collections.isEmpty {
+                Divider()
+                
+                // Custom collections
+                ForEach(collections) { collection in
+                    Button {
+                        onAddToCollection?(collection)
+                    } label: {
+                        Label(collection.name, systemImage: collection.icon)
+                    }
+                }
+            }
+        } label: {
+            Label("Add to Collection", systemImage: "folder.badge.plus")
+        }
+        
+        Divider()
+        
         Button(role: .destructive) {
             onDelete?()
         } label: {
@@ -489,6 +556,7 @@ extension ClipCardView {
         self.index = nil
         self.onSelect = onSelect
         self.onPaste = onPaste
+        self.onCopy = nil
         self.onPastePlainText = nil
         self.onPin = nil
         self.onDelete = nil
