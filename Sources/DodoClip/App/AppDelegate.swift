@@ -13,11 +13,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let clipboardMonitor = ClipboardMonitor.shared
     private let hotkeyManager = HotkeyManager.shared
     private let pasteService = PasteService.shared
+  private let collectionService = CollectionService.shared
 
     // Observers
     private var cancellables = Set<AnyCancellable>()
+    
+  // State
+  private var showingCreateCollectionSheet = false
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+  func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenuBar()
         setupBottomPanel()
         setupHotkeys()
@@ -33,8 +37,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.updateMenuBarIcon()
             }
             .store(in: &cancellables)
+        
+    // Observe collection changes to update panel
+    collectionService.objectWillChange
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] _ in
+        // Only update if panel is visible
+        if self?.panelController?.isVisible == true {
+          self?.updatePanelContent()
+        }
+      }
+      .store(in: &cancellables)
 
-        // Show first-run HUD
+    // Show first-run HUD
         showFirstRunHUDIfNeeded()
 
         // Perform auto-cleanup if enabled
@@ -183,11 +198,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func createPanelContentView() -> PanelContentView {
         PanelContentView(
-            collections: Collection.defaultCollections,
+            collections: collectionService.allCollections,
             isCompact: false,
             onPaste: { [weak self] item in
                 self?.pasteItem(item)
                 self?.panelController?.hide()
+            },
+            onCopy: { [weak self] item in
+                self?.copyItem(item)
+        self?.panelController?.hide()
             },
             onPastePlainText: { [weak self] item in
                 self?.pasteItemPlainText(item)
@@ -206,6 +225,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onOpen: { [weak self] item in
                 self?.openItem(item)
             },
+      onCreateCollection: { [weak self] in
+        self?.showCreateCollectionSheet()
+      },
             onDismiss: { [weak self] in
                 self?.panelController?.hide()
             }
@@ -334,4 +356,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func quitApp() {
         NSApp.terminate(nil)
     }
+    
+  // MARK: - Collection Management
+
+  private func showCreateCollectionSheet() {
+    let sheetView = CreateCollectionSheet { [weak self] name, icon, color in
+      self?.collectionService.createCollection(name: name, icon: icon, colorHex: color)
+      // Refresh panel to show new collection
+      self?.updatePanelContent()
+    }
+
+    let hostingController = NSHostingController(rootView: sheetView)
+
+    // Create a window for the sheet
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 400, height: 450),
+      styleMask: [.titled, .closable],
+      backing: .buffered,
+      defer: false
+    )
+    window.center()
+    window.title = "New Collection"
+    window.contentViewController = hostingController
+    window.isReleasedWhenClosed = false
+
+    // Set window level above everything else (including preview window)
+    window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.modalPanelWindow)))
+
+    // Make sure window can become key and receive keyboard input
+    window.makeKeyAndOrderFront(nil)
+    NSApp.activate(ignoringOtherApps: true)
+  }
 }

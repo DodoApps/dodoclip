@@ -34,8 +34,15 @@ final class ClipboardMonitor: ObservableObject {
         // Initialize with SwiftData
         setupPersistence()
     }
+    
+  // MARK: - Public Access
 
-    // MARK: - Persistence
+  /// Get the model context for shared use
+  func getModelContext() -> ModelContext? {
+    return modelContext
+  }
+
+  // MARK: - Persistence
 
     private func setupPersistence() {
         do {
@@ -394,8 +401,72 @@ final class ClipboardMonitor: ObservableObject {
     func resetNewClipCount() {
         newClipCount = 0
     }
+    
+  // MARK: - Reordering
 
-    // MARK: - Auto Cleanup
+  /// Move an item to a new position in the list
+  func moveItem(from sourceIndex: Int, to destinationIndex: Int) {
+    guard sourceIndex != destinationIndex,
+      sourceIndex >= 0, sourceIndex < items.count,
+      destinationIndex >= 0, destinationIndex < items.count
+    else {
+      return
+    }
+
+    let item = items.remove(at: sourceIndex)
+    items.insert(item, at: destinationIndex)
+
+    // Update the createdAt timestamp to maintain order
+    // Items earlier in the list should have newer timestamps
+    let now = Date()
+    for (index, item) in items.enumerated() {
+      // Subtract index seconds to create unique timestamps in order
+      item.createdAt = now.addingTimeInterval(-Double(index))
+    }
+
+    saveContext()
+    objectWillChange.send()
+  }
+    
+  // MARK: - Collection Management
+
+  /// Add an item to a collection by collection ID
+  func addItemToCollection(_ item: ClipItem, collectionID: UUID) {
+    guard let context = modelContext else { return }
+
+    // Fetch the collection from the same context
+    let descriptor = FetchDescriptor<Collection>(
+      predicate: #Predicate<Collection> { $0.id == collectionID }
+    )
+
+    guard let collection = try? context.fetch(descriptor).first else {
+      print("Collection not found in context")
+      return
+    }
+
+    guard !collection.isSmartCollection else { return }
+
+    // Initialize collections array if needed
+    if item.collections == nil {
+      item.collections = []
+    }
+
+    // Check if item is already in collection
+    let alreadyInCollection = item.collections?.contains(where: { $0.id == collectionID }) ?? false
+
+    if !alreadyInCollection {
+      item.collections?.append(collection)
+      saveContext()
+      objectWillChange.send()
+    }
+  }
+
+  /// Add an item to a collection (legacy method for compatibility)
+  func addItemToCollection(_ item: ClipItem, collection: Collection) {
+    addItemToCollection(item, collectionID: collection.id)
+  }
+
+  // MARK: - Auto Cleanup
 
     /// Delete unpinned items older than specified days
     func performAutoCleanup(olderThanDays days: Int) {

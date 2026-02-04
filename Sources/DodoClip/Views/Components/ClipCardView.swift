@@ -8,10 +8,14 @@ struct ClipCardView: View {
     let index: Int?
     let onSelect: () -> Void
     let onPaste: () -> Void
+    var onCopy: (() -> Void)?
     var onPastePlainText: (() -> Void)?
     var onPin: (() -> Void)?
     var onDelete: (() -> Void)?
     var onOpen: (() -> Void)?
+  var customCollections: [Collection]?
+  var onCreateCollection: (() -> Void)?
+  var onAddToCollection: ((Collection) -> Void)?
 
     @State private var isHovered: Bool = false
 
@@ -80,7 +84,8 @@ struct ClipCardView: View {
         .gesture(
             TapGesture(count: 2)
                 .onEnded {
-                    onPaste()
+          // Double-click copies to clipboard without pasting
+          onCopy?()
                 }
         )
         .simultaneousGesture(
@@ -143,8 +148,8 @@ struct ClipCardView: View {
         }
         if let index = index, index < 9 {
             tooltip += "\n⌘\(index + 1) to paste"
-        }
-        tooltip += "\nDouble-click to paste"
+    }
+    tooltip += "\nDouble-click to copy to clipboard"
         return String(tooltip)
     }
 
@@ -462,7 +467,35 @@ struct ClipCardView: View {
         }
         .keyboardShortcut("p", modifiers: .command)
 
+    Divider()
+
+    // Add to Collection submenu
+    Menu {
+      // New Tab option
+      Button {
+        onCreateCollection?()
+      } label: {
+        Label("New Tab", systemImage: "plus.circle")
+      }
+
+      // Divider
+      if let collections = customCollections, !collections.isEmpty {
         Divider()
+
+        // Custom collections
+        ForEach(collections) { collection in
+          Button {
+            onAddToCollection?(collection)
+          } label: {
+            Label(collection.name, systemImage: collection.icon)
+          }
+        }
+      }
+    } label: {
+      Label("Add to Collection", systemImage: "folder.badge.plus")
+    }
+
+    Divider()
 
         Button(role: .destructive) {
             onDelete?()
@@ -489,6 +522,7 @@ extension ClipCardView {
         self.index = nil
         self.onSelect = onSelect
         self.onPaste = onPaste
+    self.onCopy = nil
         self.onPastePlainText = nil
         self.onPin = nil
         self.onDelete = nil
