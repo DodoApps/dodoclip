@@ -39,7 +39,15 @@
 
 /* Settings */
 "settings.title" = "Ayarlar";
+"settings.windowTitle" = "DodoClip Ayarları";
 "settings.general" = "Genel";
+"settings.language" = "Language / 语言";
+"settings.interfaceLanguage" = "Arayüz Dili";
+"settings.restartRequired" = "Dil değişikliklerini uygulamak için uygulamayı yeniden başlatın";
+"settings.languageChanged" = "Dil Değiştirildi";
+"settings.restartPrompt" = "Dil değişikliğini uygulamak için lütfen DodoClip'i yeniden başlatın.";
+"settings.restartNow" = "Şimdi Yeniden Başlat";
+"settings.later" = "Sonra";
 "settings.shortcuts" = "Kısayollar";
 "settings.rules" = "Kurallar";
 "settings.about" = "Hakkında";

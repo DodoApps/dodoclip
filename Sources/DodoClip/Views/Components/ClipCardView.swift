@@ -391,7 +391,7 @@ struct ClipCardView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "pin.fill")
                         .font(.system(size: 10))
-                    Text("Pinned")
+                    Text(L10n.Misc.pinned)
                         .font(Theme.Typography.characterCount)
                 }
                 .foregroundColor(item.contentType == .color ? colorCardTextPrimary : Theme.Colors.pinned)
@@ -447,14 +447,14 @@ struct ClipCardView: View {
             switch item.contentType {
                 case .text, .richText, .link:
                     if let count = item.characterCount {
-                        Text("\(count) chars")
+                        Text("\(count) \(L10n.Misc.chars)")
                     }
                 case .image:
                     if let dims = item.imageDimensions {
                         Text(dims)
                     }
                 case .file:
-                    Text("File")
+                    Text(L10n.Misc.file)
                 case .color:
                     EmptyView()
             }

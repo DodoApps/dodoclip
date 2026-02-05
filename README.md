@@ -13,7 +13,9 @@
   <a href="README.de.md">🇩🇪 Deutsch</a> •
   <a href="README.tr.md">🇹🇷 Türkçe</a> •
   <a href="README.fr.md">🇫🇷 Français</a> •
-  <a href="README.es.md">🇪🇸 Español</a>
+  <a href="README.es.md">🇪🇸 Español</a> •
+  <a href="README.zh-Hans.md">🇨🇳 简体中文</a> •
+  <a href="README.zh-Hant.md">🇨🇳 繁體中文</a>
 </p>
 
 

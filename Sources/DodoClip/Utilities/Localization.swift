@@ -3,6 +3,30 @@ import Foundation
 /// Localization helper for accessing translated strings
 enum L10n {
     private static var bundle: Bundle {
+        // Check if user has set a custom language
+        if let languageCode = UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String {
+            #if SWIFT_PACKAGE
+            let mainBundle = Bundle.module
+            #else
+            let mainBundle = Bundle.main
+            #endif
+            
+            // Swift Package Manager converts folder names to lowercase
+            // Try both original case and lowercase
+            let languageCodes = [languageCode, languageCode.lowercased()]
+            
+            for code in languageCodes {
+                if let path = mainBundle.path(forResource: code, ofType: "lproj"),
+                   let languageBundle = Bundle(path: path) {
+                    print("✅ Loaded language bundle: \(code)")
+                    return languageBundle
+                }
+            }
+            
+            print("⚠️ Language bundle not found for: \(languageCode)")
+        }
+        
+        // Fallback to default bundle
         #if SWIFT_PACKAGE
         return Bundle.module
         #else
@@ -47,8 +71,20 @@ extension L10n {
 extension L10n {
     enum Panel {
         static var search: String { L10n.tr("panel.search") }
+        static var searchClips: String { L10n.tr("panel.searchClips") }
         static var noItems: String { L10n.tr("panel.noItems") }
         static var noResults: String { L10n.tr("panel.noResults") }
+        static var noClipsYet: String { L10n.tr("panel.noClipsYet") }
+        static var noMatchesFound: String { L10n.tr("panel.noMatchesFound") }
+        static var showPanel: String { L10n.tr("panel.showPanel") }
+        static var noClipsOfType: String { L10n.tr("panel.noClipsOfType") }
+        static var collectionEmpty: String { L10n.tr("panel.collectionEmpty") }
+        static var tryDifferentSearch: String { L10n.tr("panel.tryDifferentSearch") }
+        static var noItemsMatchFilter: String { L10n.tr("panel.noItemsMatchFilter") }
+        static var copyToSeeHere: String { L10n.tr("panel.copyToSeeHere") }
+        static var selected: String { L10n.tr("panel.selected") }
+        static var clips: String { L10n.tr("panel.clips") }
+        static var more: String { L10n.tr("panel.more") }
     }
 }
 
@@ -69,6 +105,7 @@ extension L10n {
         static var paste: String { L10n.tr("context.paste") }
         static var pastePlainText: String { L10n.tr("context.pastePlainText") }
         static var copy: String { L10n.tr("context.copy") }
+        static var copyToClipboard: String { L10n.tr("context.copyToClipboard") }
         static var pin: String { L10n.tr("context.pin") }
         static var unpin: String { L10n.tr("context.unpin") }
         static var delete: String { L10n.tr("context.delete") }
@@ -81,10 +118,18 @@ extension L10n {
 extension L10n {
     enum Settings {
         static var title: String { L10n.tr("settings.title") }
+        static var windowTitle: String { L10n.tr("settings.windowTitle") }
         static var general: String { L10n.tr("settings.general") }
         static var shortcuts: String { L10n.tr("settings.shortcuts") }
         static var rules: String { L10n.tr("settings.rules") }
         static var about: String { L10n.tr("settings.about") }
+        static var language: String { L10n.tr("settings.language") }
+        static var interfaceLanguage: String { L10n.tr("settings.interfaceLanguage") }
+        static var restartRequired: String { L10n.tr("settings.restartRequired") }
+        static var languageChanged: String { L10n.tr("settings.languageChanged") }
+        static var restartPrompt: String { L10n.tr("settings.restartPrompt") }
+        static var restartNow: String { L10n.tr("settings.restartNow") }
+        static var later: String { L10n.tr("settings.later") }
 
         enum General {
             static var launchAtLogin: String { L10n.tr("settings.general.launchAtLogin") }
@@ -163,5 +208,48 @@ extension L10n {
         static func daysAgo(_ days: Int) -> String {
             String(format: L10n.tr("time.daysAgo"), days)
         }
+    }
+}
+
+// MARK: - Keyboard
+extension L10n {
+    enum Keyboard {
+        static var navigate: String { L10n.tr("keyboard.navigate") }
+        static var multiSelect: String { L10n.tr("keyboard.multiSelect") }
+        static var paste: String { L10n.tr("keyboard.paste") }
+        static var plainText: String { L10n.tr("keyboard.plainText") }
+        static var quickPaste: String { L10n.tr("keyboard.quickPaste") }
+        static var selectAll: String { L10n.tr("keyboard.selectAll") }
+        static var pin: String { L10n.tr("keyboard.pin") }
+        static var close: String { L10n.tr("keyboard.close") }
+    }
+}
+
+// MARK: - Collection
+extension L10n {
+    enum Collection {
+        static var rename: String { L10n.tr("collection.rename") }
+        static var create: String { L10n.tr("collection.create") }
+        static var name: String { L10n.tr("collection.name") }
+        static var icon: String { L10n.tr("collection.icon") }
+        static var color: String { L10n.tr("collection.color") }
+    }
+}
+
+// MARK: - Onboarding
+extension L10n {
+    enum Onboarding {
+        static var welcome: String { L10n.tr("onboarding.welcome") }
+        static var pressShortcut: String { L10n.tr("onboarding.pressShortcut") }
+        static var skip: String { L10n.tr("onboarding.skip") }
+    }
+}
+
+// MARK: - Misc
+extension L10n {
+    enum Misc {
+        static var pinned: String { L10n.tr("misc.pinned") }
+        static var file: String { L10n.tr("misc.file") }
+        static var chars: String { L10n.tr("misc.chars") }
     }
 }

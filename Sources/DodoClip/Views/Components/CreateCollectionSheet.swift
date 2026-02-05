@@ -22,13 +22,13 @@ struct CreateCollectionSheet: View {
     var body: some View {
         VStack(spacing: 20) {
             // Title
-            Text("Create Custom Collection")
+            Text(L10n.Collection.create)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(Theme.Colors.textPrimary)
             
             // Name input
             VStack(alignment: .leading, spacing: 8) {
-                Text("Collection Name")
+                Text(L10n.Collection.name)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Theme.Colors.textSecondary)
                 
@@ -49,7 +49,7 @@ struct CreateCollectionSheet: View {
             
             // Icon selector
             VStack(alignment: .leading, spacing: 8) {
-                Text("Icon")
+                Text(L10n.Collection.icon)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Theme.Colors.textSecondary)
                 
@@ -72,7 +72,7 @@ struct CreateCollectionSheet: View {
             
             // Color selector
             VStack(alignment: .leading, spacing: 8) {
-                Text("Color")
+                Text(L10n.Collection.color)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Theme.Colors.textSecondary)
                 

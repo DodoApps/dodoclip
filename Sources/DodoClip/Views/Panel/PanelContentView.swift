@@ -316,9 +316,9 @@ struct PanelContentView: View {
         if !searchText.isEmpty {
             return L10n.Panel.noResults
         } else if !selectedTypes.isEmpty {
-            return "No clips of this type"
+            return L10n.Panel.noClipsOfType
         } else if selectedCollectionID != nil {
-            return "Collection is empty"
+            return L10n.Panel.collectionEmpty
         } else {
             return L10n.Panel.noItems
         }
@@ -326,11 +326,11 @@ struct PanelContentView: View {
     
     private var emptyStateSubtitle: String {
         if !searchText.isEmpty {
-            return "Try a different search term"
+            return L10n.Panel.tryDifferentSearch
         } else if selectedCollectionID != nil {
-            return "No items match this filter"
+            return L10n.Panel.noItemsMatchFilter
         } else {
-            return "Copy something to see it here\nPress ⇧⌘V anytime to open"
+            return L10n.Panel.copyToSeeHere
         }
     }
     
@@ -338,29 +338,29 @@ struct PanelContentView: View {
     
     private var keyboardHintsBar: some View {
         HStack(spacing: 12) {
-            keyboardHint("←→", "Navigate")
-            keyboardHint("⇧←→", "Multi-select")
-            keyboardHint("↵", "Paste")
-            keyboardHint("⇧↵", "Plain text")
-            keyboardHint("⌘1-9", "Quick paste")
-            keyboardHint("⌘A", "Select all")
-            keyboardHint("⌘P", "Pin")
-            keyboardHint("esc", "Close")
+            keyboardHint("←→", L10n.Keyboard.navigate)
+            keyboardHint("⇧←→", L10n.Keyboard.multiSelect)
+            keyboardHint("↵", L10n.Keyboard.paste)
+            keyboardHint("⇧↵", L10n.Keyboard.plainText)
+            keyboardHint("⌘1-9", L10n.Keyboard.quickPaste)
+            keyboardHint("⌘A", L10n.Keyboard.selectAll)
+            keyboardHint("⌘P", L10n.Keyboard.pin)
+            keyboardHint("esc", L10n.Keyboard.close)
             
             Spacer()
             
             if selectedItemIDs.count > 1 {
-                Text("\(selectedItemIDs.count) selected")
+                Text("\(selectedItemIDs.count) \(L10n.Panel.selected)")
                     .font(Theme.Typography.keyboardHintLabel)
                     .foregroundColor(Theme.Colors.accent)
             }
             
             if hasMoreItems {
-                Text("\(visibleItems.count)/\(allItems.count) clips")
+                Text("\(visibleItems.count)/\(allItems.count) \(L10n.Panel.clips)")
                     .font(Theme.Typography.keyboardHintLabel)
                     .foregroundColor(Theme.Colors.textSecondary.opacity(0.7))
             } else {
-                Text("\(allItems.count) clips")
+                Text("\(allItems.count) \(L10n.Panel.clips)")
                     .font(Theme.Typography.keyboardHintLabel)
                     .foregroundColor(Theme.Colors.textSecondary.opacity(0.7))
             }
@@ -567,7 +567,7 @@ struct PanelContentView: View {
                     .font(.system(size: 24))
                     .foregroundColor(Theme.Colors.accent)
                 
-                Text("+\(hiddenItemsCount) more")
+                Text("+\(hiddenItemsCount) \(L10n.Panel.more)")
                     .font(Theme.Typography.cardMeta)
                     .foregroundColor(Theme.Colors.textSecondary)
             }
@@ -682,7 +682,7 @@ struct PanelContentView: View {
             defer: false
         )
         window.center()
-        window.title = "Rename Collection"
+        window.title = L10n.Collection.rename
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
         

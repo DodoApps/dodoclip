@@ -39,7 +39,15 @@
 
 /* Settings */
 "settings.title" = "Réglages";
+"settings.windowTitle" = "Réglages DodoClip";
 "settings.general" = "Général";
+"settings.language" = "Language / 语言";
+"settings.interfaceLanguage" = "Langue de l'interface";
+"settings.restartRequired" = "Redémarrez l'application pour appliquer les modifications de langue";
+"settings.languageChanged" = "Langue modifiée";
+"settings.restartPrompt" = "Veuillez redémarrer DodoClip pour appliquer le changement de langue.";
+"settings.restartNow" = "Redémarrer maintenant";
+"settings.later" = "Plus tard";
 "settings.shortcuts" = "Raccourcis";
 "settings.rules" = "Règles";
 "settings.about" = "À propos";

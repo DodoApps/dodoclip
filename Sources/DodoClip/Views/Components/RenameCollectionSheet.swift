@@ -17,13 +17,13 @@ struct RenameCollectionSheet: View {
     var body: some View {
         VStack(spacing: 20) {
             // Title
-            Text("Rename Collection")
+            Text(L10n.Collection.rename)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(Theme.Colors.textPrimary)
             
             // Name input
             VStack(alignment: .leading, spacing: 8) {
-                Text("Collection Name")
+                Text(L10n.Collection.name)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Theme.Colors.textSecondary)
                 
