@@ -109,12 +109,12 @@ struct FirstRunHUDView: View {
                     .foregroundColor(.white.opacity(0.9))
 
                 // Welcome text
-                Text("Welcome to DodoClip")
+                Text(L10n.Onboarding.welcome)
                     .font(.system(size: 36, weight: .semibold))
                     .foregroundColor(.white)
 
                 // Instruction
-                Text("Press the shortcut below to open your clipboard")
+                Text(L10n.Onboarding.pressShortcut)
                     .font(.system(size: 18))
                     .foregroundColor(.white.opacity(0.7))
 
@@ -129,7 +129,7 @@ struct FirstRunHUDView: View {
 
                 // Skip option
                 Button(action: { viewModel.onDismiss?() }) {
-                    Text("Skip")
+                    Text(L10n.Onboarding.skip)
                         .font(.system(size: 14))
                         .foregroundColor(.white.opacity(0.5))
                 }

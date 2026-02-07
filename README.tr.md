@@ -8,6 +8,22 @@
   macOS için ücretsiz, açık kaynaklı pano yöneticisi.
 </p>
 
+<p align="center">
+  <a href="README.md">🇺🇸 English</a> •
+  <a href="README.de.md">🇩🇪 Deutsch</a> •
+  <a href="README.tr.md">🇹🇷 Türkçe</a> •
+  <a href="README.fr.md">🇫🇷 Français</a> •
+  <a href="README.es.md">🇪🇸 Español</a> •
+  <a href="README.zh-Hans.md">🇨🇳 简体中文</a> •
+  <a href="README.zh-Hant.md">🇨🇳 繁體中文</a>
+</p>
+
+
+
+https://github.com/user-attachments/assets/f281b654-a0a2-4883-b09c-21aa2cd3efb4
+
+
+
 ## Açıklama
 
 DodoClip, SwiftUI ve SwiftData ile geliştirilmiş hafif, yerel bir pano yöneticisidir. Kopyaladığınız her şeyi takip etmenize ve pano geçmişinize anında erişmenize yardımcı olur.

@@ -34,8 +34,15 @@ final class ClipboardMonitor: ObservableObject {
         // Initialize with SwiftData
         setupPersistence()
     }
+    
+  // MARK: - Public Access
 
-    // MARK: - Persistence
+  /// Get the model context for shared use
+  func getModelContext() -> ModelContext? {
+    return modelContext
+  }
+
+  // MARK: - Persistence
 
     private func setupPersistence() {
         do {
@@ -262,10 +269,22 @@ final class ClipboardMonitor: ObservableObject {
             }
         }
 
-        // Check for file URLs
-        if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL],
-           let firstURL = urls.first {
-            return .file(path: firstURL.path, name: firstURL.lastPathComponent)
+        // Check for file URLs - use safer approach to avoid NSSecureCoding crashes
+        // First check if the pasteboard contains file URL types
+        if pasteboard.types?.contains(.fileURL) == true {
+            // Try to read file URLs with explicit error handling
+            if let propertyList = pasteboard.propertyList(forType: .fileURL) as? String,
+               let url = URL(string: propertyList),
+               url.isFileURL {
+                return .file(path: url.path, name: url.lastPathComponent)
+            }
+            
+            // Fallback: try reading as string and check if it's a file path
+            if let urlString = pasteboard.string(forType: .fileURL),
+               let url = URL(string: urlString),
+               url.isFileURL {
+                return .file(path: url.path, name: url.lastPathComponent)
+            }
         }
 
         // Check for plain text (which may contain URLs)
@@ -329,8 +348,10 @@ final class ClipboardMonitor: ObservableObject {
             unpinnedItems = Array(unpinnedItems.prefix(maxUnpinned))
         }
 
-        items = pinnedItems + unpinnedItems
-        items.sort { $0.createdAt > $1.createdAt }
+        // Sort pinned and unpinned separately, then combine
+        let sortedPinned = pinnedItems.sorted { $0.createdAt > $1.createdAt }
+        let sortedUnpinned = unpinnedItems.sorted { $0.createdAt > $1.createdAt }
+        items = sortedPinned + sortedUnpinned
     }
 
     // MARK: - Pause Control
@@ -387,15 +408,101 @@ final class ClipboardMonitor: ObservableObject {
 
     func pinItem(_ item: ClipItem) {
         item.togglePin()
+        
+        // Don't re-sort immediately to avoid index confusion in UI
+        // The UI layer (PanelContentView) already handles separating pinned/unpinned items
         saveContext()
+        
+        // Check if we need to enforce history limit without re-sorting
+        // Only delete excess unpinned items if needed (oldest first)
+        let pinnedCount = items.filter { $0.isPinned && !$0.isDeleted }.count
+        let unpinnedItems = items.filter { !$0.isPinned && !$0.isDeleted }
+            .sorted { $0.createdAt < $1.createdAt } // Sort by creation time, oldest first
+        let maxUnpinned = max(0, historyLimit - pinnedCount)
+        
+        if unpinnedItems.count > maxUnpinned {
+            let itemsToDelete = Array(unpinnedItems.prefix(unpinnedItems.count - maxUnpinned))
+            for itemToDelete in itemsToDelete {
+                modelContext?.delete(itemToDelete)
+                if let index = items.firstIndex(where: { $0.id == itemToDelete.id }) {
+                    items.remove(at: index)
+                }
+            }
+            saveContext()
+        }
+        
         objectWillChange.send()
     }
 
     func resetNewClipCount() {
         newClipCount = 0
     }
+    
+  // MARK: - Reordering
 
-    // MARK: - Auto Cleanup
+  /// Move an item to a new position in the list
+  func moveItem(from sourceIndex: Int, to destinationIndex: Int) {
+    guard sourceIndex != destinationIndex,
+      sourceIndex >= 0, sourceIndex < items.count,
+      destinationIndex >= 0, destinationIndex < items.count
+    else {
+      return
+    }
+
+    let item = items.remove(at: sourceIndex)
+    items.insert(item, at: destinationIndex)
+
+    // Update the createdAt timestamp to maintain order
+    // Items earlier in the list should have newer timestamps
+    let now = Date()
+    for (index, item) in items.enumerated() {
+      // Subtract index seconds to create unique timestamps in order
+      item.createdAt = now.addingTimeInterval(-Double(index))
+    }
+
+    saveContext()
+    objectWillChange.send()
+  }
+    
+  // MARK: - Collection Management
+
+  /// Add an item to a collection by collection ID
+  func addItemToCollection(_ item: ClipItem, collectionID: UUID) {
+    guard let context = modelContext else { return }
+
+    // Fetch the collection from the same context
+    let descriptor = FetchDescriptor<Collection>(
+      predicate: #Predicate<Collection> { $0.id == collectionID }
+    )
+
+    guard let collection = try? context.fetch(descriptor).first else {
+      print("Collection not found in context")
+      return
+    }
+
+    guard !collection.isSmartCollection else { return }
+
+    // Initialize collections array if needed
+    if item.collections == nil {
+      item.collections = []
+    }
+
+    // Check if item is already in collection
+    let alreadyInCollection = item.collections?.contains(where: { $0.id == collectionID }) ?? false
+
+    if !alreadyInCollection {
+      item.collections?.append(collection)
+      saveContext()
+      objectWillChange.send()
+    }
+  }
+
+  /// Add an item to a collection (legacy method for compatibility)
+  func addItemToCollection(_ item: ClipItem, collection: Collection) {
+    addItemToCollection(item, collectionID: collection.id)
+  }
+
+  // MARK: - Auto Cleanup
 
     /// Delete unpinned items older than specified days
     func performAutoCleanup(olderThanDays days: Int) {

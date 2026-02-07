@@ -80,7 +80,7 @@ struct MenuBarPopoverView: View {
                 .foregroundColor(Theme.Colors.textSecondary)
                 .font(.system(size: 12))
 
-            TextField("Search clips...", text: $searchText, prompt: Text("Search clips...").foregroundColor(Theme.Colors.textSecondary))
+            TextField(L10n.Panel.searchClips, text: $searchText, prompt: Text(L10n.Panel.searchClips).foregroundColor(Theme.Colors.textSecondary))
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Colors.textPrimary)
@@ -153,7 +153,7 @@ struct MenuBarPopoverView: View {
                 .font(.system(size: 32))
                 .foregroundColor(Theme.Colors.textSecondary.opacity(0.5))
 
-            Text(searchText.isEmpty ? "No clips yet" : "No matches found")
+            Text(searchText.isEmpty ? L10n.Panel.noClipsYet : L10n.Panel.noMatchesFound)
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Colors.textSecondary)
         }
@@ -171,7 +171,7 @@ struct MenuBarPopoverView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "rectangle.expand.vertical")
                         .font(.system(size: 11))
-                    Text("Show Panel")
+                    Text(L10n.Panel.showPanel)
                         .font(.system(size: 11))
                 }
                 .foregroundColor(Theme.Colors.textSecondary)
@@ -287,14 +287,14 @@ struct ClipRowView: View {
             onPaste?()
         }
         .contextMenu {
-            Button("Paste") { onPaste?() }
-            Button("Paste as Plain Text") { onPastePlainText?() }
+            Button(L10n.Context.paste) { onPaste?() }
+            Button(L10n.Context.pastePlainText) { onPastePlainText?() }
             Divider()
-            Button("Copy to Clipboard") { onCopy?() }
+            Button(L10n.Context.copyToClipboard) { onCopy?() }
             Divider()
-            Button(item.isPinned ? "Unpin" : "Pin") { onPin?() }
+            Button(item.isPinned ? L10n.Context.unpin : L10n.Context.pin) { onPin?() }
             Divider()
-            Button("Delete", role: .destructive) { onDelete?() }
+            Button(L10n.Context.delete, role: .destructive) { onDelete?() }
         }
         .help(tooltipText)
     }

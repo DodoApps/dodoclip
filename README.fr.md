@@ -8,6 +8,22 @@
   Un gestionnaire de presse-papiers gratuit et open-source pour macOS.
 </p>
 
+<p align="center">
+  <a href="README.md">🇺🇸 English</a> •
+  <a href="README.de.md">🇩🇪 Deutsch</a> •
+  <a href="README.tr.md">🇹🇷 Türkçe</a> •
+  <a href="README.fr.md">🇫🇷 Français</a> •
+  <a href="README.es.md">🇪🇸 Español</a> •
+  <a href="README.zh-Hans.md">🇨🇳 简体中文</a> •
+  <a href="README.zh-Hant.md">🇨🇳 繁體中文</a>
+</p>
+
+
+
+https://github.com/user-attachments/assets/f281b654-a0a2-4883-b09c-21aa2cd3efb4
+
+
+
 ## Description
 
 DodoClip est un gestionnaire de presse-papiers natif et léger, construit avec SwiftUI et SwiftData. Il vous aide à garder une trace de tout ce que vous copiez et à accéder instantanément à votre historique de presse-papiers.

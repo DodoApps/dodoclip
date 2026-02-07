@@ -5,6 +5,11 @@ import SwiftData
 struct DodoClipApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    init() {
+        // Initialize language manager to apply saved language preference
+        _ = LanguageManager.shared
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             ClipItem.self,
@@ -66,9 +71,30 @@ struct SettingsView: View {
 
 struct GeneralSettingsTab: View {
     @ObservedObject private var settingsService = SettingsService.shared
+    @ObservedObject private var languageManager = LanguageManager.shared
 
     var body: some View {
         Form {
+            Section(L10n.Settings.language) {
+                Picker(L10n.Settings.interfaceLanguage, selection: Binding(
+                    get: { languageManager.currentLanguage },
+                    set: { newLanguage in
+                        languageManager.setLanguage(newLanguage)
+                        // Show alert that restart is required
+                        showRestartAlert()
+                    }
+                )) {
+                    ForEach(AppLanguage.allCases, id: \.self) { language in
+                        Text(language.displayName).tag(language)
+                    }
+                }
+                .pickerStyle(.menu)
+                
+                Text(L10n.Settings.restartRequired)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
             Section {
                 Toggle(L10n.Settings.General.launchAtLogin, isOn: Binding(
                     get: { settingsService.launchAtLogin },
@@ -130,6 +156,31 @@ struct GeneralSettingsTab: View {
         }
         .formStyle(.grouped)
         .padding()
+    }
+    
+    private func showRestartAlert() {
+        let alert = NSAlert()
+        alert.messageText = L10n.Settings.languageChanged
+        alert.informativeText = L10n.Settings.restartPrompt
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: L10n.Settings.restartNow)
+        alert.addButton(withTitle: L10n.Settings.later)
+        
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            // Restart the app
+            restartApp()
+        }
+    }
+    
+    private func restartApp() {
+        let url = URL(fileURLWithPath: Bundle.main.resourcePath!)
+        let path = url.deletingLastPathComponent().deletingLastPathComponent().absoluteString
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = [path]
+        task.launch()
+        NSApplication.shared.terminate(nil)
     }
 }
 

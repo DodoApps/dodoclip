@@ -17,8 +17,20 @@
 
 /* Panel */
 "panel.search" = "Search...";
+"panel.searchClips" = "Search clips...";
 "panel.noItems" = "No clipboard items yet";
 "panel.noResults" = "No results found";
+"panel.noClipsYet" = "No clips yet";
+"panel.noMatchesFound" = "No matches found";
+"panel.showPanel" = "Show Panel";
+"panel.noClipsOfType" = "No clips of this type";
+"panel.collectionEmpty" = "Collection is empty";
+"panel.tryDifferentSearch" = "Try a different search term";
+"panel.noItemsMatchFilter" = "No items match this filter";
+"panel.copyToSeeHere" = "Copy something to see it here\nPress ⇧⌘V anytime to open";
+"panel.selected" = "selected";
+"panel.clips" = "clips";
+"panel.more" = "more";
 
 /* Sections */
 "section.all" = "All";
@@ -31,6 +43,7 @@
 "context.paste" = "Paste";
 "context.pastePlainText" = "Paste as Plain Text";
 "context.copy" = "Copy";
+"context.copyToClipboard" = "Copy to Clipboard";
 "context.pin" = "Pin";
 "context.unpin" = "Unpin";
 "context.delete" = "Delete";
@@ -39,7 +52,15 @@
 
 /* Settings */
 "settings.title" = "Settings";
+"settings.windowTitle" = "DodoClip Settings";
 "settings.general" = "General";
+"settings.language" = "Language / 语言";
+"settings.interfaceLanguage" = "Interface Language";
+"settings.restartRequired" = "Restart the app to apply language changes";
+"settings.languageChanged" = "Language Changed";
+"settings.restartPrompt" = "Please restart DodoClip to apply the language change.";
+"settings.restartNow" = "Restart Now";
+"settings.later" = "Later";
 "settings.shortcuts" = "Shortcuts";
 "settings.rules" = "Rules";
 "settings.about" = "About";
@@ -94,3 +115,30 @@
 "time.hoursAgo" = "%d hr ago";
 "time.yesterday" = "Yesterday";
 "time.daysAgo" = "%d days ago";
+
+/* Keyboard Hints */
+"keyboard.navigate" = "Navigate";
+"keyboard.multiSelect" = "Multi-select";
+"keyboard.paste" = "Paste";
+"keyboard.plainText" = "Plain text";
+"keyboard.quickPaste" = "Quick paste";
+"keyboard.selectAll" = "Select all";
+"keyboard.pin" = "Pin";
+"keyboard.close" = "Close";
+
+/* Collection */
+"collection.rename" = "Rename Collection";
+"collection.create" = "Create Custom Collection";
+"collection.name" = "Collection Name";
+"collection.icon" = "Icon";
+"collection.color" = "Color";
+
+/* Onboarding */
+"onboarding.welcome" = "Welcome to DodoClip";
+"onboarding.pressShortcut" = "Press the shortcut below to open your clipboard";
+"onboarding.skip" = "Skip";
+
+/* Misc */
+"misc.pinned" = "Pinned";
+"misc.file" = "File";
+"misc.chars" = "chars";

@@ -8,6 +8,22 @@
   Un gestor de portapapeles gratuito y de código abierto para macOS.
 </p>
 
+<p align="center">
+  <a href="README.md">🇺🇸 English</a> •
+  <a href="README.de.md">🇩🇪 Deutsch</a> •
+  <a href="README.tr.md">🇹🇷 Türkçe</a> •
+  <a href="README.fr.md">🇫🇷 Français</a> •
+  <a href="README.es.md">🇪🇸 Español</a> •
+  <a href="README.zh-Hans.md">🇨🇳 简体中文</a> •
+  <a href="README.zh-Hant.md">🇨🇳 繁體中文</a>
+</p>
+
+
+
+https://github.com/user-attachments/assets/f281b654-a0a2-4883-b09c-21aa2cd3efb4
+
+
+
 ## Descripción
 
 DodoClip es un gestor de portapapeles nativo y ligero, construido con SwiftUI y SwiftData. Te ayuda a mantener un registro de todo lo que copias y acceder al historial de tu portapapeles instantáneamente.

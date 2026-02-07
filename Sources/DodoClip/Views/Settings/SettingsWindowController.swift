@@ -28,7 +28,7 @@ final class SettingsWindowController {
             defer: false
         )
 
-        window.title = "DodoClip Settings"
+        window.title = L10n.Settings.windowTitle
         window.contentViewController = hostingController
         window.center()
         window.isReleasedWhenClosed = false
