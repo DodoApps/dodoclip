@@ -410,9 +410,24 @@ struct PanelContentView: View {
             newIndex = 0
         }
         
-        selectedItemID = items[newIndex].id
-        selectedItemIDs = [items[newIndex].id]
-        BottomPanelController.shared.updateSelectedItem(items[newIndex])
+        // Verify the new index is valid
+        guard newIndex >= 0 && newIndex < items.count else { return }
+        
+        let newItem = items[newIndex]
+        // Verify the item is not deleted
+        guard !newItem.isDeleted else {
+            // Try to navigate to the next valid item
+            if delta > 0 && newIndex + 1 < items.count {
+                navigateSelection(by: delta + 1)
+            } else if delta < 0 && newIndex - 1 >= 0 {
+                navigateSelection(by: delta - 1)
+            }
+            return
+        }
+        
+        selectedItemID = newItem.id
+        selectedItemIDs = [newItem.id]
+        BottomPanelController.shared.updateSelectedItem(newItem)
     }
     
     private func extendSelection(by delta: Int) {
@@ -598,17 +613,41 @@ struct PanelContentView: View {
             isSelected: selectedItemID == item.id || selectedItemIDs.contains(item.id),
             isCompact: isCompact,
             index: index,
-            onSelect: { handleSelection(item) },
-            onPaste: { handlePaste(item) },
-            onCopy: { onCopy?(item) },
-            onPastePlainText: { onPastePlainText?(item) },
-            onPin: { onPin?(item) },
-      onDelete: { onDelete?(item) },
-      onOpen: { onOpen?(item) },
-      customCollections: collections.filter { !$0.isSmartCollection },
-      onCreateCollection: onCreateCollection,
-      onAddToCollection: { collection in
-        handleAddItemToCollection(itemID: item.id, collection: collection)
+            onSelect: { 
+                // Check if item is still valid before selecting
+                guard !item.isDeleted else { return }
+                handleSelection(item) 
+            },
+            onPaste: { 
+                // Check if item is still valid before pasting
+                guard !item.isDeleted else { return }
+                handlePaste(item) 
+            },
+            onCopy: { 
+                guard !item.isDeleted else { return }
+                onCopy?(item) 
+            },
+            onPastePlainText: { 
+                guard !item.isDeleted else { return }
+                onPastePlainText?(item) 
+            },
+            onPin: { 
+                guard !item.isDeleted else { return }
+                onPin?(item) 
+            },
+            onDelete: { 
+                guard !item.isDeleted else { return }
+                onDelete?(item) 
+            },
+            onOpen: { 
+                guard !item.isDeleted else { return }
+                onOpen?(item) 
+            },
+            customCollections: collections.filter { !$0.isSmartCollection },
+            onCreateCollection: onCreateCollection,
+            onAddToCollection: { collection in
+                guard !item.isDeleted else { return }
+                handleAddItemToCollection(itemID: item.id, collection: collection)
             }
         )
         .id(item.id)
@@ -649,6 +688,16 @@ struct PanelContentView: View {
     // MARK: - Selection Handling
     
     private func handleSelection(_ item: ClipItem) {
+        // Verify the item is still valid and in the current list
+        guard !item.isDeleted,
+              allItems.contains(where: { $0.id == item.id }) else {
+            // Item is no longer valid, clear selection
+            selectedItemID = nil
+            selectedItemIDs.removeAll()
+            BottomPanelController.shared.updateSelectedItem(nil)
+            return
+        }
+        
         if selectedItemID == item.id {
             selectedItemID = nil
             BottomPanelController.shared.updateSelectedItem(nil)
@@ -660,9 +709,19 @@ struct PanelContentView: View {
     }
     
     private func handlePaste(_ item: ClipItem) {
+        // Verify the item is still valid
+        guard !item.isDeleted else {
+            return
+        }
+        
         if selectedItemIDs.count > 1 {
-            let itemsToPaste = filteredItems.filter { selectedItemIDs.contains($0.id) }
-            onPasteMultiple?(itemsToPaste)
+            // Filter out any deleted items before pasting
+            let itemsToPaste = filteredItems.filter { 
+                selectedItemIDs.contains($0.id) && !$0.isDeleted 
+            }
+            if !itemsToPaste.isEmpty {
+                onPasteMultiple?(itemsToPaste)
+            }
         } else {
             onPaste?(item)
         }

@@ -79,6 +79,9 @@ final class LanguageManager: ObservableObject {
         // Apply the language
         applyLanguage(language)
         
+        // Clear L10n bundle cache to force reload
+        L10n.reloadBundle()
+        
         // Notify observers
         objectWillChange.send()
     }
@@ -110,19 +113,35 @@ final class LanguageManager: ObservableObject {
             let mainBundle = Bundle.main
             #endif
             
-            // Swift Package Manager converts folder names to lowercase
-            // Try both original case and lowercase
-            let languageCodes = [languageCode, languageCode.lowercased()]
+            // Try multiple variants of the language code
+            var languageCodes: [String] = [languageCode, languageCode.lowercased()]
+            
+            // If language code contains region (e.g., zh-Hans-CN), also try without region
+            if languageCode.contains("-") {
+                let components = languageCode.split(separator: "-")
+                if components.count > 2 {
+                    // Try without the last component: zh-Hans-CN -> zh-Hans
+                    let withoutRegion = components.dropLast().joined(separator: "-")
+                    languageCodes.append(withoutRegion)
+                    languageCodes.append(withoutRegion.lowercased())
+                }
+                if components.count > 1 {
+                    // Also try just the first component: zh-Hans-CN -> zh
+                    let baseLanguage = String(components[0])
+                    languageCodes.append(baseLanguage)
+                    languageCodes.append(baseLanguage.lowercased())
+                }
+            }
             
             for code in languageCodes {
                 if let path = mainBundle.path(forResource: code, ofType: "lproj") {
                     languageBundle = Bundle(path: path)
-                    print("✅ Language bundle loaded: \(code)")
+                    print("✅ Language bundle loaded: \(code) for requested language: \(languageCode)")
                     return
                 }
             }
             
-            print("⚠️ Language bundle not found for: \(languageCode)")
+            print("⚠️ Language bundle not found for: \(languageCode), tried: \(languageCodes)")
         }
     }
     

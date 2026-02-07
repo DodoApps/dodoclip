@@ -269,10 +269,22 @@ final class ClipboardMonitor: ObservableObject {
             }
         }
 
-        // Check for file URLs
-        if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL],
-           let firstURL = urls.first {
-            return .file(path: firstURL.path, name: firstURL.lastPathComponent)
+        // Check for file URLs - use safer approach to avoid NSSecureCoding crashes
+        // First check if the pasteboard contains file URL types
+        if pasteboard.types?.contains(.fileURL) == true {
+            // Try to read file URLs with explicit error handling
+            if let propertyList = pasteboard.propertyList(forType: .fileURL) as? String,
+               let url = URL(string: propertyList),
+               url.isFileURL {
+                return .file(path: url.path, name: url.lastPathComponent)
+            }
+            
+            // Fallback: try reading as string and check if it's a file path
+            if let urlString = pasteboard.string(forType: .fileURL),
+               let url = URL(string: urlString),
+               url.isFileURL {
+                return .file(path: url.path, name: url.lastPathComponent)
+            }
         }
 
         // Check for plain text (which may contain URLs)
@@ -396,8 +408,29 @@ final class ClipboardMonitor: ObservableObject {
 
     func pinItem(_ item: ClipItem) {
         item.togglePin()
+        
+        // Don't re-sort immediately to avoid index confusion in UI
+        // The UI layer (PanelContentView) already handles separating pinned/unpinned items
         saveContext()
-        enforceHistoryLimit()  // Re-sort to move pinned items to top
+        
+        // Check if we need to enforce history limit without re-sorting
+        // Only delete excess unpinned items if needed (oldest first)
+        let pinnedCount = items.filter { $0.isPinned && !$0.isDeleted }.count
+        let unpinnedItems = items.filter { !$0.isPinned && !$0.isDeleted }
+            .sorted { $0.createdAt < $1.createdAt } // Sort by creation time, oldest first
+        let maxUnpinned = max(0, historyLimit - pinnedCount)
+        
+        if unpinnedItems.count > maxUnpinned {
+            let itemsToDelete = Array(unpinnedItems.prefix(unpinnedItems.count - maxUnpinned))
+            for itemToDelete in itemsToDelete {
+                modelContext?.delete(itemToDelete)
+                if let index = items.firstIndex(where: { $0.id == itemToDelete.id }) {
+                    items.remove(at: index)
+                }
+            }
+            saveContext()
+        }
+        
         objectWillChange.send()
     }
 

@@ -2,29 +2,74 @@ import Foundation
 
 /// Localization helper for accessing translated strings
 enum L10n {
+    // Cache the bundle to avoid repeated lookups
+    private static var cachedBundle: Bundle?
+    private static var cachedLanguageCode: String?
+    
     private static var bundle: Bundle {
-        // Check if user has set a custom language
-        if let languageCode = UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String {
-            #if SWIFT_PACKAGE
-            let mainBundle = Bundle.module
-            #else
-            let mainBundle = Bundle.main
-            #endif
-            
-            // Swift Package Manager converts folder names to lowercase
-            // Try both original case and lowercase
-            let languageCodes = [languageCode, languageCode.lowercased()]
-            
-            for code in languageCodes {
-                if let path = mainBundle.path(forResource: code, ofType: "lproj"),
-                   let languageBundle = Bundle(path: path) {
-                    print("✅ Loaded language bundle: \(code)")
-                    return languageBundle
-                }
-            }
-            
-            print("⚠️ Language bundle not found for: \(languageCode)")
+        // Get current language code
+        let currentLanguageCode = UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String
+        
+        // Return cached bundle if language hasn't changed
+        if let cached = cachedBundle, cachedLanguageCode == currentLanguageCode {
+            return cached
         }
+        
+        // Language changed or first load, find the appropriate bundle
+        let loadedBundle = loadLanguageBundle(for: currentLanguageCode)
+        
+        // Cache the result
+        cachedBundle = loadedBundle
+        cachedLanguageCode = currentLanguageCode
+        
+        return loadedBundle
+    }
+    
+    private static func loadLanguageBundle(for languageCode: String?) -> Bundle {
+        guard let languageCode = languageCode else {
+            // No custom language, use default
+            #if SWIFT_PACKAGE
+            return Bundle.module
+            #else
+            return Bundle.main
+            #endif
+        }
+        
+        #if SWIFT_PACKAGE
+        let mainBundle = Bundle.module
+        #else
+        let mainBundle = Bundle.main
+        #endif
+        
+        // Try multiple variants of the language code
+        var languageCodes: [String] = [languageCode, languageCode.lowercased()]
+        
+        // If language code contains region (e.g., zh-Hans-CN), also try without region
+        if languageCode.contains("-") {
+            let components = languageCode.split(separator: "-")
+            if components.count > 2 {
+                // Try without the last component: zh-Hans-CN -> zh-Hans
+                let withoutRegion = components.dropLast().joined(separator: "-")
+                languageCodes.append(withoutRegion)
+                languageCodes.append(withoutRegion.lowercased())
+            }
+            if components.count > 1 {
+                // Also try just the first component: zh-Hans-CN -> zh
+                let baseLanguage = String(components[0])
+                languageCodes.append(baseLanguage)
+                languageCodes.append(baseLanguage.lowercased())
+            }
+        }
+        
+        for code in languageCodes {
+            if let path = mainBundle.path(forResource: code, ofType: "lproj"),
+               let languageBundle = Bundle(path: path) {
+                print("✅ Loaded language bundle: \(code) for requested language: \(languageCode)")
+                return languageBundle
+            }
+        }
+        
+        print("⚠️ Language bundle not found for: \(languageCode), tried: \(languageCodes), using default")
         
         // Fallback to default bundle
         #if SWIFT_PACKAGE
@@ -32,6 +77,12 @@ enum L10n {
         #else
         return Bundle.main
         #endif
+    }
+    
+    /// Force reload the language bundle (call this when language changes)
+    static func reloadBundle() {
+        cachedBundle = nil
+        cachedLanguageCode = nil
     }
 
     fileprivate static func tr(_ key: String) -> String {
