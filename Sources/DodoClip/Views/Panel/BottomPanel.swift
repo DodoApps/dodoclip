@@ -250,6 +250,9 @@ struct PreviewContentView: View {
         .onAppear {
             loadContent()
         }
+        .onChange(of: item.id) { _, _ in
+            loadContent()
+        }
     }
     
     @ViewBuilder
