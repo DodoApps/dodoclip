@@ -97,6 +97,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func showPopover() {
         guard let button = statusItem?.button else { return }
+        // Remember the frontmost app so we can paste back to it
+        pasteService.savePreviousApp()
 
         let popover = NSPopover()
         popover.contentSize = NSSize(
@@ -217,6 +219,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showBottomPanel() {
+        // Remember the frontmost app so we can paste back to it
+        pasteService.savePreviousApp()
         updatePanelContent()
         clipboardMonitor.resetNewClipCount()
         panelController?.show()
@@ -239,6 +243,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkeyManager.onPasteStackHotkey = { [weak self] in
             self?.activatePasteStack()
+        }
+
+        hotkeyManager.onQuickPasteHotkey = { [weak self] index in
+            self?.quickPaste(index: index)
         }
     }
 
@@ -288,6 +296,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func openItem(_ item: ClipItem) {
         pasteService.open(item)
+    }
+
+    // MARK: - Quick Paste
+
+    private func quickPaste(index: Int) {
+        let items = clipboardMonitor.items
+        guard index < items.count else { return }
+        pasteService.savePreviousApp()
+        pasteService.paste(items[index])
     }
 
     // MARK: - Paste Stack
