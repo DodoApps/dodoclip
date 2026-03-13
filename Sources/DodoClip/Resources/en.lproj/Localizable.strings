@@ -40,6 +40,13 @@
 /* Settings */
 "settings.title" = "Settings";
 "settings.general" = "General";
+"settings.language" = "Language / 语言";
+"settings.interfaceLanguage" = "Interface Language";
+"settings.restartRequired" = "Restart the app to apply language changes";
+"settings.languageChanged" = "Language Changed";
+"settings.restartPrompt" = "Please restart DodoClip to apply the language change.";
+"settings.restartNow" = "Restart Now";
+"settings.later" = "Later";
 "settings.shortcuts" = "Shortcuts";
 "settings.rules" = "Rules";
 "settings.about" = "About";

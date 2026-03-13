@@ -27,7 +27,9 @@ let package = Package(
                 .process("Resources/de.lproj"),
                 .process("Resources/tr.lproj"),
                 .process("Resources/fr.lproj"),
-                .process("Resources/es.lproj")
+                .process("Resources/es.lproj"),
+                .process("Resources/zh-Hans.lproj"),
+                .process("Resources/zh-Hant.lproj")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")

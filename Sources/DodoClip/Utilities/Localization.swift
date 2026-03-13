@@ -2,12 +2,82 @@ import Foundation
 
 /// Localization helper for accessing translated strings
 enum L10n {
+    // Cache the bundle to avoid repeated lookups
+    private static var cachedBundle: Bundle?
+    private static var cachedLanguageCode: String?
+
     private static var bundle: Bundle {
+        // Get current language code
+        let currentLanguageCode = UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String
+
+        // Return cached bundle if language hasn't changed
+        if let cached = cachedBundle, cachedLanguageCode == currentLanguageCode {
+            return cached
+        }
+
+        // Language changed or first load, find the appropriate bundle
+        let loadedBundle = loadLanguageBundle(for: currentLanguageCode)
+
+        // Cache the result
+        cachedBundle = loadedBundle
+        cachedLanguageCode = currentLanguageCode
+
+        return loadedBundle
+    }
+
+    private static func loadLanguageBundle(for languageCode: String?) -> Bundle {
+        guard let languageCode = languageCode else {
+            // No custom language, use default
+            #if SWIFT_PACKAGE
+            return Bundle.module
+            #else
+            return Bundle.main
+            #endif
+        }
+
+        #if SWIFT_PACKAGE
+        let mainBundle = Bundle.module
+        #else
+        let mainBundle = Bundle.main
+        #endif
+
+        // Try multiple variants of the language code
+        var languageCodes: [String] = [languageCode, languageCode.lowercased()]
+
+        // If language code contains region (e.g., zh-Hans-CN), also try without region
+        if languageCode.contains("-") {
+            let components = languageCode.split(separator: "-")
+            if components.count > 2 {
+                let withoutRegion = components.dropLast().joined(separator: "-")
+                languageCodes.append(withoutRegion)
+                languageCodes.append(withoutRegion.lowercased())
+            }
+            if components.count > 1 {
+                let baseLanguage = String(components[0])
+                languageCodes.append(baseLanguage)
+                languageCodes.append(baseLanguage.lowercased())
+            }
+        }
+
+        for code in languageCodes {
+            if let path = mainBundle.path(forResource: code, ofType: "lproj"),
+               let languageBundle = Bundle(path: path) {
+                return languageBundle
+            }
+        }
+
+        // Fallback to default bundle
         #if SWIFT_PACKAGE
         return Bundle.module
         #else
         return Bundle.main
         #endif
+    }
+
+    /// Force reload the language bundle (call this when language changes)
+    static func reloadBundle() {
+        cachedBundle = nil
+        cachedLanguageCode = nil
     }
 
     fileprivate static func tr(_ key: String) -> String {
@@ -85,6 +155,13 @@ extension L10n {
         static var shortcuts: String { L10n.tr("settings.shortcuts") }
         static var rules: String { L10n.tr("settings.rules") }
         static var about: String { L10n.tr("settings.about") }
+        static var language: String { L10n.tr("settings.language") }
+        static var interfaceLanguage: String { L10n.tr("settings.interfaceLanguage") }
+        static var restartRequired: String { L10n.tr("settings.restartRequired") }
+        static var languageChanged: String { L10n.tr("settings.languageChanged") }
+        static var restartPrompt: String { L10n.tr("settings.restartPrompt") }
+        static var restartNow: String { L10n.tr("settings.restartNow") }
+        static var later: String { L10n.tr("settings.later") }
 
         enum General {
             static var launchAtLogin: String { L10n.tr("settings.general.launchAtLogin") }
