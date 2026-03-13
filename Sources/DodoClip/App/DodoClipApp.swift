@@ -152,6 +152,14 @@ struct ShortcutsSettingsTab: View {
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
+
+                HStack {
+                    Text("Quick paste (1st–9th item)")
+                    Spacer()
+                    Text("⌃⌘1–9")
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .formStyle(.grouped)

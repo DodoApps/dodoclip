@@ -6,7 +6,19 @@ import Carbon
 final class PasteService {
     static let shared = PasteService()
 
+    /// The app that was frontmost before DodoClip's panel appeared
+    private var previousApp: NSRunningApplication?
+
     private init() {}
+
+    /// Remember the currently frontmost app so we can restore focus before pasting
+    func savePreviousApp() {
+        let frontmost = NSWorkspace.shared.frontmostApplication
+        // Don't save DodoClip itself
+        if frontmost?.bundleIdentifier != Bundle.main.bundleIdentifier {
+            previousApp = frontmost
+        }
+    }
 
     // MARK: - Paste Actions
 
@@ -103,8 +115,13 @@ final class PasteService {
     // MARK: - Simulate Paste
 
     private func simulatePaste() {
-        // Small delay to ensure pasteboard is ready
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+        // Restore focus to the previous app before sending the keystroke
+        if let app = previousApp {
+            app.activate()
+        }
+
+        // Delay to ensure the target app is focused and pasteboard is ready
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.sendPasteKeystroke()
         }
     }
