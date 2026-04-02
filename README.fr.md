@@ -57,6 +57,13 @@ Après l'installation, exécutez cette commande pour autoriser l'ouverture de l'
 xattr -cr /Applications/DodoClip.app
 ```
 
+Accordez ensuite à DodoClip les autorisations nécessaires dans ces listes macOS pour que le collage global fonctionne :
+
+- `Réglages Système > Confidentialité et sécurité > Accessibilité`
+- `Réglages Système > Confidentialité et sécurité > Surveillance de l'entrée` si DodoClip apparaît dans cette liste sur votre système
+
+Si DodoClip s'ouvre mais que la sélection d'un élément met seulement à jour le presse-papiers sans coller dans l'application précédente, supprimez DodoClip de ces mêmes listes, ajoutez-le de nouveau, puis relancez l'app. Sur certaines configurations macOS, cette réinitialisation est nécessaire après une installation ou une mise à jour.
+
 ## Compilation depuis les sources
 
 1. Clonez le dépôt :

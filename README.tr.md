@@ -57,6 +57,13 @@ Kurulumdan sonra uygulamayı açmak için bu komutu çalıştırın:
 xattr -cr /Applications/DodoClip.app
 ```
 
+Ardından global yapıştırmanın çalışması için DodoClip'e macOS'ta şu gizlilik listelerinde izin verin:
+
+- `Sistem Ayarları > Gizlilik ve Güvenlik > Erişilebilirlik`
+- `Sistem Ayarları > Gizlilik ve Güvenlik > Giriş İzleme`, eğer DodoClip sisteminizde bu listede görünüyorsa
+
+DodoClip açılıyor ama bir öğe seçildiğinde sadece pano güncelleniyor ve önceki uygulamaya yapıştırılmıyorsa, DodoClip'i bu listelerden kaldırın, yeniden ekleyin ve uygulamayı tekrar açın. Bazı macOS kurulumlarında bu yenileme kurulum veya güncellemeden sonra gerekli oluyor.
+
 ## Kaynak Koddan Derleme
 
 1. Depoyu klonlayın:

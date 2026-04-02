@@ -51,6 +51,11 @@
 "settings.rules" = "规则";
 "settings.about" = "关于";
 
+/* Permissions */
+"permissions.accessibility.title" = "为 DodoClip 启用辅助功能权限";
+"permissions.accessibility.message" = "DodoClip 需要辅助功能权限，才能将焦点切回之前的应用并粘贴所选内容。请打开系统设置，并在“隐私与安全性 > 辅助功能”中启用 DodoClip。如果更新后列表中已存在该应用，请先移除再重新添加。";
+"permissions.openSettings" = "打开设置";
+
 /* General Settings */
 "settings.general.launchAtLogin" = "登录时启动";
 "settings.general.showInMenuBar" = "在菜单栏中显示";

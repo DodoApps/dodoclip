@@ -2,6 +2,12 @@ import AppKit
 import SwiftUI
 import Combine
 
+enum PanelHotkeyAction: Equatable {
+    case completeFirstRun
+    case hidePanel
+    case showPanel
+}
+
 /// Main application delegate managing menu bar and panel
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -13,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let clipboardMonitor = ClipboardMonitor.shared
     private let hotkeyManager = HotkeyManager.shared
     private let pasteService = PasteService.shared
+    private let permissionsService = PermissionsService.shared
 
     // Observers
     private var cancellables = Set<AnyCancellable>()
@@ -39,6 +46,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Perform auto-cleanup if enabled
         clipboardMonitor.checkAutoCleanup()
+
+        promptForRequiredPermissionsIfNeeded()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -110,12 +119,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let menuBarView = MenuBarPopoverView(
             onPaste: { [weak self] item in
-                self?.pasteItem(item)
-                self?.popover?.performClose(nil)
+                self?.dismissPopoverThen {
+                    self?.pasteItem(item)
+                }
             },
             onPastePlainText: { [weak self] item in
-                self?.pasteItemPlainText(item)
-                self?.popover?.performClose(nil)
+                self?.dismissPopoverThen {
+                    self?.pasteItemPlainText(item)
+                }
             },
             onCopy: { [weak self] item in
                 self?.copyItem(item)
@@ -188,16 +199,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             collections: Collection.defaultCollections,
             isCompact: false,
             onPaste: { [weak self] item in
-                self?.pasteItem(item)
-                self?.panelController?.hide()
+                self?.dismissPanelThen {
+                    self?.pasteItem(item)
+                }
             },
             onPastePlainText: { [weak self] item in
-                self?.pasteItemPlainText(item)
-                self?.panelController?.hide()
+                self?.dismissPanelThen {
+                    self?.pasteItemPlainText(item)
+                }
             },
             onPasteMultiple: { [weak self] items in
-                self?.pasteItems(items)
-                self?.panelController?.hide()
+                self?.dismissPanelThen {
+                    self?.pasteItems(items)
+                }
             },
             onPin: { [weak self] item in
                 self?.togglePin(item)
@@ -212,6 +226,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.panelController?.hide()
             }
         )
+    }
+
+    private func dismissPanelThen(_ action: @escaping () -> Void) {
+        panelController?.hide(completion: action)
+    }
+
+    private func dismissPopoverThen(_ action: @escaping () -> Void) {
+        popover?.performClose(nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: action)
     }
 
     @objc private func showBottomPanelAction() {
@@ -233,21 +256,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyManager.registerDefaultHotkeys()
 
         hotkeyManager.onPanelHotkey = { [weak self] in
-            // Handle first-run HUD if showing
-            if FirstRunController.shared.isShowingHUD {
-                FirstRunController.shared.hotkeyPressed()
-                return
-            }
-            self?.panelController?.toggle()
+            self?.handlePanelHotkey()
         }
 
         hotkeyManager.onPasteStackHotkey = { [weak self] in
-            self?.activatePasteStack()
+            self?.handlePasteStackHotkey()
         }
 
         hotkeyManager.onQuickPasteHotkey = { [weak self] index in
             self?.quickPaste(index: index)
         }
+    }
+
+    func handlePanelHotkey() {
+        switch Self.panelHotkeyAction(
+            isFirstRunHUDShowing: FirstRunController.shared.isShowingHUD,
+            isPanelVisible: panelController?.isVisible == true
+        ) {
+        case .completeFirstRun:
+            FirstRunController.shared.hotkeyPressed()
+        case .hidePanel:
+            panelController?.hide()
+        case .showPanel:
+            showBottomPanel()
+        }
+    }
+
+    func handlePasteStackHotkey() {
+        pasteService.savePreviousApp()
+        activatePasteStack()
+    }
+
+    static func panelHotkeyAction(isFirstRunHUDShowing: Bool, isPanelVisible: Bool) -> PanelHotkeyAction {
+        if isFirstRunHUDShowing {
+            return .completeFirstRun
+        }
+
+        if isPanelVisible {
+            return .hidePanel
+        }
+
+        return .showPanel
     }
 
     // MARK: - First Run HUD
@@ -257,6 +306,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // First run completed - open the panel
             self?.showBottomPanel()
         }
+    }
+
+    private func promptForRequiredPermissionsIfNeeded(retryCount: Int = 5) {
+        guard retryCount > 0 else {
+            permissionsService.promptForRequiredPermissionsIfNeeded()
+            return
+        }
+
+        guard !FirstRunController.shared.isShowingHUD else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                self?.promptForRequiredPermissionsIfNeeded(retryCount: retryCount - 1)
+            }
+            return
+        }
+
+        permissionsService.promptForRequiredPermissionsIfNeeded()
     }
 
     // MARK: - Clipboard Monitoring

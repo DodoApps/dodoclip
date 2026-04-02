@@ -202,9 +202,10 @@ final class BottomPanelController: ObservableObject {
         isVisible = true
     }
 
-    func hide() {
+    func hide(completion: (() -> Void)? = nil) {
         panel?.hide { [weak self] in
             self?.isVisible = false
+            completion?()
         }
     }
 

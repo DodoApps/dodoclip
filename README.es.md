@@ -57,6 +57,13 @@ Después de instalar, ejecuta este comando para permitir que la app se abra:
 xattr -cr /Applications/DodoClip.app
 ```
 
+Después, concede permiso a DodoClip en estas listas de privacidad de macOS para que el pegado global funcione:
+
+- `Configuración del Sistema > Privacidad y seguridad > Accesibilidad`
+- `Configuración del Sistema > Privacidad y seguridad > Monitorización de entrada` si DodoClip aparece en esa lista en tu sistema
+
+Si DodoClip se abre pero al seleccionar un elemento solo actualiza el portapapeles y no pega en la app anterior, elimina DodoClip de esas mismas listas, añádelo de nuevo y vuelve a abrir la app. En algunas configuraciones de macOS este reinicio de permisos es necesario después de instalar o actualizar la aplicación.
+
 ## Compilar desde el código fuente
 
 1. Clona el repositorio:

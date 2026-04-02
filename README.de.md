@@ -57,6 +57,13 @@ Nach der Installation führe diesen Befehl aus, um die App zu öffnen:
 xattr -cr /Applications/DodoClip.app
 ```
 
+Erteile DodoClip danach in diesen macOS-Datenschutzlisten die erforderlichen Berechtigungen, damit globales Einfügen funktioniert:
+
+- `Systemeinstellungen > Datenschutz & Sicherheit > Bedienungshilfen`
+- `Systemeinstellungen > Datenschutz & Sicherheit > Eingabekontrolle`, falls DodoClip dort auf deinem System angezeigt wird
+
+Wenn DodoClip zwar startet, aber beim Auswählen eines Eintrags nur die Zwischenablage aktualisiert und nichts in die vorherige App einfügt, entferne DodoClip aus genau diesen Listen, füge die App erneut hinzu und starte sie neu. Auf manchen macOS-Systemen ist diese Aktualisierung nach einer Installation oder einem Update erforderlich.
+
 ## Aus dem Quellcode bauen
 
 1. Repository klonen:
