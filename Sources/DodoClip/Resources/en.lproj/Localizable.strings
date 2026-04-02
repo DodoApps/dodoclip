@@ -51,6 +51,11 @@
 "settings.rules" = "Rules";
 "settings.about" = "About";
 
+/* Permissions */
+"permissions.accessibility.title" = "Enable Accessibility for DodoClip";
+"permissions.accessibility.message" = "DodoClip needs Accessibility access to return focus to the previous app and paste the selected clip. Open System Settings and enable DodoClip in Privacy & Security > Accessibility. If the app was already listed, remove it and add it again after updating.";
+"permissions.openSettings" = "Open Settings";
+
 /* General Settings */
 "settings.general.launchAtLogin" = "Launch at login";
 "settings.general.showInMenuBar" = "Show in menu bar";

@@ -29,11 +29,11 @@ final class PermissionsService {
         hasPromptedThisLaunch = true
 
         let alert = NSAlert()
-        alert.messageText = "Enable Accessibility for DodoClip"
-        alert.informativeText = "DodoClip needs Accessibility access to return focus to the previous app and paste the selected clip. Open System Settings and enable DodoClip in Privacy & Security > Accessibility. If the app was already listed, remove it and add it again after updating."
+        alert.messageText = L10n.Permissions.accessibilityTitle
+        alert.informativeText = L10n.Permissions.accessibilityMessage
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "Open Settings")
-        alert.addButton(withTitle: "Later")
+        alert.addButton(withTitle: L10n.Permissions.openSettings)
+        alert.addButton(withTitle: L10n.Settings.later)
 
         if alert.runModal() == .alertFirstButtonReturn {
             requestAccessibilityPermission()

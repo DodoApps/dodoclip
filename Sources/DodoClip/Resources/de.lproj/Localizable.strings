@@ -51,6 +51,11 @@
 "settings.rules" = "Regeln";
 "settings.about" = "Über";
 
+/* Permissions */
+"permissions.accessibility.title" = "Bedienungshilfen für DodoClip aktivieren";
+"permissions.accessibility.message" = "DodoClip benötigt Zugriff auf die Bedienungshilfen, um zur vorherigen App zurückzukehren und den ausgewählten Zwischenablageeintrag einzufügen. Öffnen Sie die Systemeinstellungen und aktivieren Sie DodoClip unter Datenschutz & Sicherheit > Bedienungshilfen. Wenn die App dort bereits aufgeführt war, entfernen Sie sie nach einem Update und fügen Sie sie erneut hinzu.";
+"permissions.openSettings" = "Einstellungen öffnen";
+
 /* General Settings */
 "settings.general.launchAtLogin" = "Bei Anmeldung starten";
 "settings.general.showInMenuBar" = "In Menüleiste anzeigen";

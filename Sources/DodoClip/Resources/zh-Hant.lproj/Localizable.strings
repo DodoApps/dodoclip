@@ -51,6 +51,11 @@
 "settings.rules" = "規則";
 "settings.about" = "關於";
 
+/* Permissions */
+"permissions.accessibility.title" = "為 DodoClip 啟用輔助使用權限";
+"permissions.accessibility.message" = "DodoClip 需要輔助使用權限，才能將焦點切回先前的應用程式並貼上所選內容。請打開系統設定，並在「隱私權與安全性 > 輔助使用」中啟用 DodoClip。如果更新後清單中已經有這個 App，請先移除再重新加入。";
+"permissions.openSettings" = "打開設定";
+
 /* General Settings */
 "settings.general.launchAtLogin" = "登入時啟動";
 "settings.general.showInMenuBar" = "在選單列中顯示";

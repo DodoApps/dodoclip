@@ -51,6 +51,11 @@
 "settings.rules" = "Kurallar";
 "settings.about" = "Hakkında";
 
+/* Permissions */
+"permissions.accessibility.title" = "DodoClip için Erişilebilirliği Etkinleştir";
+"permissions.accessibility.message" = "DodoClip'in önceki uygulamaya odağı geri verip seçilen öğeyi yapıştırabilmesi için Erişilebilirlik iznine ihtiyacı var. Sistem Ayarları'nı açın ve Gizlilik ve Güvenlik > Erişilebilirlik altında DodoClip'i etkinleştirin. Uygulama burada zaten listeleniyorsa, güncellemeden sonra kaldırıp yeniden ekleyin.";
+"permissions.openSettings" = "Ayarları Aç";
+
 /* General Settings */
 "settings.general.launchAtLogin" = "Girişte başlat";
 "settings.general.showInMenuBar" = "Menü çubuğunda göster";

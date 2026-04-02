@@ -202,6 +202,15 @@ extension L10n {
     }
 }
 
+// MARK: - Permissions
+extension L10n {
+    enum Permissions {
+        static var accessibilityTitle: String { L10n.tr("permissions.accessibility.title") }
+        static var accessibilityMessage: String { L10n.tr("permissions.accessibility.message") }
+        static var openSettings: String { L10n.tr("permissions.openSettings") }
+    }
+}
+
 // MARK: - About
 extension L10n {
     enum About {

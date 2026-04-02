@@ -51,6 +51,11 @@
 "settings.rules" = "Règles";
 "settings.about" = "À propos";
 
+/* Permissions */
+"permissions.accessibility.title" = "Activer l'accessibilité pour DodoClip";
+"permissions.accessibility.message" = "DodoClip a besoin de l'autorisation Accessibilité pour redonner le focus à l'application précédente et coller l'élément sélectionné. Ouvrez les Réglages Système et activez DodoClip dans Confidentialité et sécurité > Accessibilité. Si l'app figurait déjà dans la liste, supprimez-la puis ajoutez-la de nouveau après la mise à jour.";
+"permissions.openSettings" = "Ouvrir les réglages";
+
 /* General Settings */
 "settings.general.launchAtLogin" = "Lancer au démarrage";
 "settings.general.showInMenuBar" = "Afficher dans la barre des menus";
