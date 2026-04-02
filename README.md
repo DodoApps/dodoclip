@@ -72,6 +72,13 @@ After installing, run this command to allow the app to open:
 xattr -cr /Applications/DodoClip.app
 ```
 
+Then grant DodoClip permission in these macOS privacy lists so global paste works:
+
+- `System Settings > Privacy & Security > Accessibility`
+- `System Settings > Privacy & Security > Input Monitoring` if DodoClip appears there on your system
+
+If DodoClip opens but selecting an item only updates the clipboard and does not paste into the previous app, remove DodoClip from those same lists, add it again, and reopen the app. On some macOS setups this refresh is required after installing or updating the app.
+
 ## Building from Source
 
 1. Clone the repository:
@@ -101,6 +108,8 @@ xattr -cr /Applications/DodoClip.app
 ```
 
 Then open DodoClip again.
+
+For global paste to work reliably, enable DodoClip in `System Settings > Privacy & Security > Accessibility` and in `System Settings > Privacy & Security > Input Monitoring` if DodoClip appears there on your system. If paste still only updates the clipboard after an install or update, remove DodoClip from those lists, add it again, and reopen the app.
 
 ### I double-clicked the app but nothing happened
 
