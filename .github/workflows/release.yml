@@ -1,0 +1,44 @@
+name: Build and attach DMG to release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-dmg:
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build release binary
+        run: swift build -c release
+
+      - name: Bundle app
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: bash Scripts/bundle-app.sh "$APP_VERSION"
+
+      - name: Create DMG
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          hdiutil create \
+            -volname "DodoClip" \
+            -srcfolder .build/release/DodoClip.app \
+            -ov -format UDZO \
+            "DodoClip-${APP_VERSION}.dmg"
+
+      - name: Upload DMG to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: gh release upload "$RELEASE_TAG" "DodoClip-${APP_VERSION}.dmg" --clobber
