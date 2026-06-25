@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// Custom NSPanel for the bottom clipboard panel
-/// Floats above all windows, no title bar, dark appearance
+/// Floats above all windows, no title bar, follows the system light/dark appearance
 final class BottomPanel: NSPanel {
 
     private var hostingController: NSHostingController<AnyView>?
@@ -41,9 +41,11 @@ final class BottomPanel: NSPanel {
         isMovableByWindowBackground = false
         acceptsMouseMovedEvents = true
 
-        // Visual effect for the background
+        // Visual effect for the background.
+        // `.popover` adapts its vibrancy to the active light/dark appearance,
+        // unlike `.hudWindow` which is always dark.
         let visualEffect = NSVisualEffectView()
-        visualEffect.material = .hudWindow
+        visualEffect.material = .popover
         visualEffect.state = .active
         visualEffect.blendingMode = .behindWindow
         visualEffect.wantsLayer = true
