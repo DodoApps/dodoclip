@@ -1,29 +1,30 @@
+import AppKit
 import SwiftUI
 
-/// DodoClip theme constants - always dark mode
+/// DodoClip theme constants - automatically follows the system light/dark appearance
 enum Theme {
     // MARK: - Colors
 
     enum Colors {
-        // Panel
-        static let panelBackground = Color(hex: "1E1E1E")
-        static let cardBackground = Color(hex: "2D2D2D")
-        static let cardHover = Color(hex: "3D3D3D")
-        static let cardSelected = Color(hex: "4A4A4A")
+        // Panel - neutrals adapt to the system appearance
+        static let panelBackground = Color(light: "F2F2F7", dark: "1E1E1E")
+        static let cardBackground = Color(light: "FFFFFF", dark: "2D2D2D")
+        static let cardHover = Color(light: "E9E9EF", dark: "3D3D3D")
+        static let cardSelected = Color(light: "DCDCE4", dark: "4A4A4A")
 
         // Text
-        static let textPrimary = Color.white
-        static let textSecondary = Color(hex: "8E8E93")
+        static let textPrimary = Color(light: "000000", dark: "FFFFFF")
+        static let textSecondary = Color(light: "8E8E93", dark: "8E8E93")
 
-        // Accent
+        // Accent - system blue is identical in both appearances
         static let accent = Color(hex: "007AFF")
 
         // UI Elements
-        static let searchBackground = Color(hex: "3A3A3C")
-        static let filterChipBackground = Color(hex: "48484A")
-        static let divider = Color(hex: "38383A")
+        static let searchBackground = Color(light: "E3E3E8", dark: "3A3A3C")
+        static let filterChipBackground = Color(light: "D8D8DD", dark: "48484A")
+        static let divider = Color(light: "D1D1D6", dark: "38383A")
 
-        // Type Badges
+        // Type Badges - vivid system colors, consistent across appearances
         static let badgeText = Color(hex: "007AFF")
         static let badgeImage = Color(hex: "34C759")
         static let badgeLink = Color(hex: "AF52DE")
@@ -121,6 +122,16 @@ extension Color {
         let b = Double(rgb & 0x0000FF) / 255.0
 
         self.init(red: r, green: g, blue: b)
+    }
+
+    /// Creates a dynamic color that resolves to the light or dark hex value
+    /// based on the system appearance at render time.
+    init(light: String, dark: String) {
+        let dynamic = NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            return NSColor(hex: isDark ? dark : light) ?? .clear
+        }
+        self.init(nsColor: dynamic)
     }
 }
 
